@@ -1,0 +1,20 @@
+{
+  "errors": [],
+  "results": {
+    "deterministic": true,
+    "meanRenderMs": 3.883749999999418,
+    "overflow": false,
+    "scrollHeight": 9844,
+    "dpr": 1,
+    "soundMuted": true,
+    "canvas": {
+      "width": 390,
+      "height": 844
+    }
+  },
+  "sound": {
+    "paused": false,
+    "muted": false,
+    "loop": true
+  }
+}

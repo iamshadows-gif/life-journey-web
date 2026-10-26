@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#080d18" />
+    <meta
+      name="description"
+      content="Some stay. Some pass through. All leave a little light. A quiet, interactive journey through the threads of a life."
+    />
+    <title>Interwoven — A life in threads</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath fill='%23d8bd80' d='M20 2 23 17 38 20 23 23 20 38 17 23 2 20 17 17Z'/%3E%3C/svg%3E"
+    />
+    <link
+      rel="preload"
+      href="/fonts/cormorant-regular.ttf"
+      as="font"
+      type="font/ttf"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/cormorant-italic.ttf"
+      as="font"
+      type="font/ttf"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/dm-sans.ttf"
+      as="font"
+      type="font/ttf"
+      crossorigin
+    />
+  </head>
+  <body>
+    <main id="journey" aria-label="Interwoven: a life in threads">
+      <section class="stage" id="stage" aria-labelledby="story-title">
+        <canvas
+          id="universe"
+          role="img"
+          aria-label="Age 0. A new life begins, surrounded by Grandma, Mom, Dad, and Grandpa. Each person is a star on a glowing thread."
+        ></canvas>
+
+        <header class="masthead">
+          <a
+            class="wordmark"
+            href="#"
+            aria-label="Interwoven, back to the beginning"
+          >
+            <svg class="brand-star" viewBox="0 0 28 28" aria-hidden="true">
+              <path
+                d="M14 1.5 16.3 11.7 26.5 14 16.3 16.3 14 26.5 11.7 16.3 1.5 14 11.7 11.7Z"
+              />
+              <circle cx="14" cy="14" r="5.6" />
+            </svg>
+            <span>Interwoven</span>
+          </a>
+          <p class="edition">
+            <span class="edition-dot"></span><span>A life in threads</span>
+          </p>
+        </header>
+
+        <nav class="chapter-navigation" aria-label="Chapters">
+          <button
+            class="chapter-tick is-current"
+            data-age="0"
+            aria-label="Chapter 1: The beginning"
+            aria-current="step"
+          >
+            <span>01</span>
+          </button>
+          <button
+            class="chapter-tick"
+            data-age="10"
+            aria-label="Chapter 2: Our first connections"
+          >
+            <span>02</span>
+          </button>
+          <button
+            class="chapter-tick"
+            data-age="22"
+            aria-label="Chapter 3: Crossing paths"
+          >
+            <span>03</span>
+          </button>
+          <button
+            class="chapter-tick"
+            data-age="36"
+            aria-label="Chapter 4: A little fuller"
+          >
+            <span>04</span>
+          </button>
+          <button
+            class="chapter-tick"
+            data-age="62"
+            aria-label="Chapter 5: The light that stays"
+          >
+            <span>05</span>
+          </button>
+          <button
+            class="chapter-tick"
+            data-age="85"
+            aria-label="Chapter 6: The journey"
+          >
+            <span>06</span>
+          </button>
+        </nav>
+
+        <footer class="stage-footer">
+          <div class="scroll-cue" id="scroll-cue">
+            <span class="scroll-arrow" aria-hidden="true"
+              ><svg viewBox="0 0 12 22"><path d="M6 1v18M1 14l5 5 5-5" /></svg
+            ></span>
+            <span id="scroll-label">Scroll to begin</span>
+          </div>
+          <button
+            class="restart"
+            id="restart"
+            type="button"
+            tabindex="-1"
+            aria-hidden="true"
+          >
+            <span aria-hidden="true">↺</span> Begin again
+          </button>
+          <p class="footer-note">Every connection leaves a little light.</p>
+          <button
+            class="sound-toggle"
+            id="sound-toggle"
+            type="button"
+            aria-label="Turn ambient sound on"
+            aria-pressed="false"
+          >
+            <span class="sound-bars" aria-hidden="true"
+              ><i></i><i></i><i></i><i></i><i></i
+            ></span>
+            <span id="sound-label">Sound off</span>
+          </button>
+        </footer>
+
+        <div class="progress-rail" aria-hidden="true">
+          <div id="progress-fill"></div>
+        </div>
+        <progress
+          class="sr-only"
+          id="age-progress"
+          max="85"
+          value="0"
+          aria-label="Years into a life"
+        >
+          0 of 85 years
+        </progress>
+        <div class="sr-only">
+          <h1 id="story-title">A life, interwoven.</h1>
+          <p>Some stay. Some pass through. All leave a little light.</p>
+          <p>
+            Scroll down to move through 85 years. Scroll up to revisit the past.
+            You can also use the chapter buttons, arrow keys, or Page Down. Turn
+            on sound for a soft ambient accompaniment.
+          </p>
+          <p>
+            Our lives begin with family. Friends find us, a partner joins us,
+            and a child is born. Departing lights rise into the sky, rest there,
+            then slowly fade away. Later, the child follows an independent path
+            that stays in view. Me rises last, before the closing message.
+          </p>
+          <h2>Life is a journey</h2>
+          <p>
+            Some threads end. Their light never does.<br />And somehow, we are
+            still connected.
+          </p>
+        </div>
+      </section>
+    </main>
+    <audio
+      id="ambient"
+      src="/audio/ambient.wav"
+      loop
+      muted
+      preload="none"
+      aria-label="Soft ambient soundscape"
+    ></audio>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
