@@ -299,7 +299,7 @@ if (timefliesSection && timefliesLetters.length) {
     );
   }
 
-  // ── 4. Strengthened hover dissolve ──────────────────────────────────
+  // ── 4. Hover: dissolve + time-bending stretch + cursor glow ──────────
   const isTouch = window.matchMedia("(pointer: coarse)").matches;
   timefliesSection.setAttribute("tabindex", "0");
   timefliesSection.setAttribute("aria-label", "Time flies — move pointer to dissolve");
@@ -308,19 +308,76 @@ if (timefliesSection && timefliesLetters.length) {
   let mouseX = -9999;
   let mouseY = -9999;
 
-  // Precompute per-letter random dispersion for hover
+  // Cursor glow elements (only on continuation, not on journey)
+  const cursorGlow = document.querySelector("#cursor-glow");
+  const cursorCore = cursorGlow?.querySelector(".cursor-glow-core");
+  const cursorTrails = cursorGlow ? [...cursorGlow.querySelectorAll(".cursor-trail")] : [];
+  let glowVisible = false;
+  let glowIdleTimer = null;
+  let quickX = null;
+  let quickY = null;
+  const trailPos = cursorTrails.map(() => ({ x: -100, y: -100 }));
+  if (cursorGlow && cursorCore && !prefersReduced && !isTouch) {
+    quickX = gsap.quickTo(cursorCore, "x", { duration: 0.42, ease: "power3.out" });
+    const quickYCore = gsap.quickTo(cursorCore, "y", { duration: 0.42, ease: "power3.out" });
+    const qxTrail = cursorTrails.map((el) => gsap.quickTo(el, "x", { duration: 0.55, ease: "power2.out" }));
+    const qyTrail = cursorTrails.map((el) => gsap.quickTo(el, "y", { duration: 0.55, ease: "power2.out" }));
+    // Move glow with cursor anywhere inside #continuation
+    const updateGlow = (x, y) => {
+      if (!glowVisible) {
+        cursorGlow.classList.add("is-visible");
+        cursorGlow.classList.remove("is-idle");
+        glowVisible = true;
+      }
+      quickX(x);
+      quickYCore(y);
+      // Trail with lag
+      cursorTrails.forEach((_, i) => {
+        setTimeout(() => {
+          qxTrail[i](x);
+          qyTrail[i](y);
+          cursorTrails[i].style.opacity = String(0.52 - i * 0.14);
+        }, (i + 1) * 44);
+      });
+      cursorGlow.classList.remove("is-idle");
+      clearTimeout(glowIdleTimer);
+      glowIdleTimer = setTimeout(() => cursorGlow.classList.add("is-idle"), 560);
+    };
+    // Show only when inside continuation
+    const onContMove = (e) => {
+      const cont = document.querySelector("#continuation");
+      const cr = cont.getBoundingClientRect();
+      const inside = e.clientY >= cr.top && e.clientY <= cr.bottom;
+      if (inside) updateGlow(e.clientX, e.clientY);
+      else if (glowVisible) {
+        cursorGlow.classList.remove("is-visible");
+        cursorGlow.classList.remove("is-idle");
+        glowVisible = false;
+        cursorTrails.forEach((t) => (t.style.opacity = "0"));
+      }
+    };
+    window.addEventListener("pointermove", onContMove, { passive: true });
+    window.addEventListener("pointerleave", () => {
+      cursorGlow.classList.remove("is-visible");
+      glowVisible = false;
+      clearTimeout(glowIdleTimer);
+    });
+  }
+
+  // Precompute per-letter random dispersion + bend params
   const hoverMeta = timefliesLetters.map(() => ({
     dx: (Math.random() - 0.5) * 26,
     dy: -4 - Math.random() * 14,
     rot: (Math.random() - 0.5) * 10,
+    bendSy: 1 + (Math.random() * 0.14 - 0.02), // stretch Y up to 1.12
+    bendSx: 1 - Math.random() * 0.08,
+    bendSkew: (Math.random() - 0.5) * 8,
   }));
 
   function updateDissolve() {
     rafId = null;
-    // Only allow strong hover after entrance is largely complete
-    // We can check if timefliesSection is in center viewport
     const rect = timefliesSection.getBoundingClientRect();
-    const inView = rect.top < window.innerHeight * 0.75 && rect.bottom > window.innerHeight * 0.25;
+    const inView = rect.top < window.innerHeight * 0.78 && rect.bottom > window.innerHeight * 0.22;
     if (!inView) return;
 
     for (let i = 0; i < timefliesLetters.length; i++) {
@@ -333,27 +390,45 @@ if (timefliesSection && timefliesLetters.length) {
       const maxDist = 220;
       const influence = 1 - Math.min(dist / maxDist, 1);
       if (influence > 0.03) {
-        // Strong dissolve: opacity drops fast, blur high, disperse
-        const op = Math.max(0, 1 - Math.pow(influence, 0.85) * 1.08);
-        const blur = influence * 14;
+        // Dissolve intensity stronger near cursor
+        const op = Math.max(0, 1 - Math.pow(influence, 0.78) * 1.12);
+        const blur = influence * 16;
         const tx = meta.dx * influence;
         const ty = meta.dy * influence;
         const scale = 1 - influence * 0.14;
         const rot = meta.rot * influence;
+        // Time-bending: stretch vertical near cursor, slight horizontal squeeze + skew
+        const bendSy = 1 + (meta.bendSy - 1) * influence * 1.1;
+        const bendSx = 1 - (1 - meta.bendSx) * influence;
+        const skew = meta.bendSkew * influence;
         span.style.opacity = String(op);
         if (!prefersReduced) {
-          span.style.filter = `blur(${blur}px)`;
-          span.style.transform = `translate3d(${tx}px, ${ty}px, 0) scale(${scale}) rotate(${rot}deg)`;
+          // Combine dissolve + bend — bending is most visible at influence 0.25–0.65
+          if (influence > 0.18 && influence < 0.86) {
+            span.style.filter = `blur(${blur}px)`;
+            span.style.transform = `translate3d(${tx}px, ${ty}px, 0) scale(${bendSx}, ${bendSy}) skewX(${skew}deg) rotate(${rot * 0.5}deg)`;
+            span.classList.add("is-bending");
+            span.style.setProperty("--bend-blur", `${blur * 0.45}px`);
+            span.style.setProperty("--bend-x", `${tx * 0.6}px`);
+            span.style.setProperty("--bend-y", `${ty * 0.7}px`);
+            span.style.setProperty("--bend-sx", `${bendSx}`);
+            span.style.setProperty("--bend-sy", `${bendSy}`);
+            span.style.setProperty("--bend-skew", `${skew}deg`);
+          } else {
+            span.style.filter = `blur(${blur}px)`;
+            span.style.transform = `translate3d(${tx}px, ${ty}px, 0) scale(${scale}) rotate(${rot}deg)`;
+            span.classList.remove("is-bending");
+          }
         }
-        span.classList.toggle("is-dissolving", influence > 0.45);
+        span.classList.toggle("is-dissolving", influence > 0.42);
         span.style.setProperty("--dx", `${tx}px`);
         span.style.setProperty("--rot", `${rot}deg`);
       } else {
-        // Return smoothly (transition handles it)
         span.style.opacity = "";
         span.style.filter = "";
         span.style.transform = "";
         span.classList.remove("is-dissolving");
+        span.classList.remove("is-bending");
       }
     }
   }
@@ -367,12 +442,15 @@ if (timefliesSection && timefliesLetters.length) {
   function onPointerLeave() {
     mouseX = -9999;
     mouseY = -9999;
+    // Fade trail
+    cursorTrails.forEach((t) => (t.style.opacity = "0"));
     for (const span of timefliesLetters) {
-      span.style.transition = "opacity 0.85s ease, filter 0.85s ease, transform 0.85s ease";
+      span.style.transition = "opacity 0.9s ease, filter 0.9s ease, transform 0.9s ease";
       span.style.opacity = "";
       span.style.filter = "";
       span.style.transform = "";
       span.classList.remove("is-dissolving");
+      span.classList.remove("is-bending");
     }
     setTimeout(() => {
       for (const span of timefliesLetters) span.style.transition = "";
@@ -459,6 +537,33 @@ if (timefliesSection && timefliesLetters.length) {
       span.style.transform = "";
     });
   });
+}
+
+// ── Golden Thread: single thin line from darkness to clock ─────────────
+{
+  const thread = document.querySelector(".golden-thread");
+  const threadPath = document.querySelector("#golden-thread-path");
+  if (thread && threadPath && !reducedPreference.matches) {
+    const len = 1360;
+    gsap.set(threadPath, {
+      strokeDasharray: len,
+      strokeDashoffset: len,
+    });
+    gsap.set(thread, { opacity: 0 });
+    const threadTl = gsap.timeline({
+      scrollTrigger: {
+        trigger: continuation,
+        start: "top 68%",
+        end: "top -6%",
+        scrub: 1.1,
+      },
+    });
+    // Draw across darkness (thin line appears)
+    threadTl.to(thread, { opacity: 0.95, duration: 0.18, ease: "none" }, 0);
+    threadTl.to(threadPath, { strokeDashoffset: 0, duration: 0.62, ease: "power1.inOut" }, 0.06);
+    // Hold briefly, then fade as clock assembles — thread becomes clock outline
+    threadTl.to(thread, { opacity: 0, duration: 0.32, ease: "power2.in" }, 0.58);
+  }
 }
 
 // ── 5 & 6. Clock construction + movement as one scroll-driven sequence ─
