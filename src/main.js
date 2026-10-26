@@ -9,8 +9,6 @@ import {
   CHAPTERS,
   MAX_AGE,
   SCROLL_DISTANCE,
-  DEATH_YEARS,
-  LEAVE_YEARS,
 } from "./people.js";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -60,15 +58,10 @@ function updateChrome() {
     lastAge = wholeAge;
     progressElement.value = age;
     progressElement.textContent = `${wholeAge} of 85 years`;
-    const visible = PEOPLE.filter(
-      (p) =>
-        age >= p.startAge &&
-        (p.endAge === null || age < p.endAge + DEATH_YEARS) &&
-        (p.leaveAge == null || age < p.leaveAge + LEAVE_YEARS),
-    ).map((p) => p.name);
+    const visible = PEOPLE.filter((p) => age >= p.startAge).map((p) => p.name);
     canvas.setAttribute(
       "aria-label",
-      `Age ${wholeAge}. Connections in view: ${visible.join(", ")}. Departing lights rise into the sky, linger, then slowly fade away.`,
+      `Age ${wholeAge}. Connections in view: ${visible.join(", ")}. Departing lights rise into the sky and remain as stars. At the end all stars connect to Me.`,
     );
   }
   const chapter = Math.max(
@@ -134,41 +127,8 @@ document.querySelector(".wordmark").addEventListener("click", (event) => {
   seekAge(0);
 });
 
-// No auto-play. Audio is only requested following an explicit user gesture.
-const audio = document.querySelector("#ambient");
-const soundToggle = document.querySelector("#sound-toggle");
-const soundLabel = document.querySelector("#sound-label");
-audio.volume = 0.48;
-let soundOn = false;
-let soundPending = false;
-soundToggle.addEventListener("click", async () => {
-  if (soundPending) return;
-  if (soundOn) {
-    audio.pause();
-    audio.muted = true;
-    soundOn = false;
-  } else {
-    soundPending = true;
-    audio.muted = false;
-    try {
-      await audio.play();
-      soundOn = true;
-    } catch {
-      audio.muted = true;
-      soundLabel.textContent = "Try sound again";
-      soundToggle.setAttribute("aria-label", "Retry ambient sound");
-      soundPending = false;
-      return;
-    }
-    soundPending = false;
-  }
-  soundToggle.setAttribute("aria-pressed", String(soundOn));
-  soundToggle.setAttribute(
-    "aria-label",
-    `Turn ambient sound ${soundOn ? "off" : "on"}`,
-  );
-  soundLabel.textContent = `Sound ${soundOn ? "on" : "off"}`;
-});
+// Audio removed for now — user will provide different audio.
+// Sound toggle hidden in index.html; no audio logic needed.
 
 // Rebuild caches only when the actual stage size changes. 100svh prevents
 // mobile browser chrome from resizing the story during a normal scroll.
