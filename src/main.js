@@ -130,6 +130,117 @@ document.querySelector(".wordmark").addEventListener("click", (event) => {
 // Audio removed for now — user will provide different audio.
 // Sound toggle hidden in index.html; no audio logic needed.
 
+// ── Hub: continuation after 85 ─────────────────────────────────────────────
+const hub = document.querySelector("#hub");
+const hubNodes = [...document.querySelectorAll(".hub-node")];
+const hubPanels = [...document.querySelectorAll(".hub-panel")];
+const hubCloses = [...document.querySelectorAll(".hub-panel__close")];
+
+function openHubPanel(id) {
+  const target = document.getElementById(`panel-${id}`);
+  if (!target) return;
+  // Close others
+  hubPanels.forEach((p) => {
+    if (p !== target) p.hidden = true;
+  });
+  hubNodes.forEach((n) => {
+    n.setAttribute("aria-expanded", n.dataset.dest === id ? "true" : "false");
+  });
+  target.hidden = false;
+  target.focus({ preventScroll: true });
+  // Update URL without reload (preserve history)
+  const url = new URL(window.location.href);
+  url.hash = id;
+  history.replaceState(null, "", url);
+  // Smooth scroll to panel using existing Lenis
+  const top = target.getBoundingClientRect().top + window.scrollY - 20;
+  if (!reducedPreference.matches) {
+    lenis.scrollTo(top, { duration: 1.2 });
+  } else {
+    window.scrollTo(0, top);
+  }
+}
+
+function closeHubPanels() {
+  hubPanels.forEach((p) => (p.hidden = true));
+  hubNodes.forEach((n) => n.setAttribute("aria-expanded", "false"));
+  if (window.location.hash) {
+    history.replaceState(null, "", window.location.pathname);
+  }
+}
+
+hubNodes.forEach((btn) =>
+  btn.addEventListener("click", () => {
+    const id = btn.dataset.dest;
+    const panel = document.getElementById(`panel-${id}`);
+    const willOpen = panel.hidden;
+    if (willOpen) openHubPanel(id);
+    else closeHubPanels();
+  }),
+);
+hubCloses.forEach((btn) =>
+  btn.addEventListener("click", () => {
+    closeHubPanels();
+    // Return focus to the node that opened it
+    const id = btn.closest(".hub-panel").id.replace("panel-", "");
+    document.querySelector(`[data-dest="${id}"]`)?.focus();
+  }),
+);
+
+// Esc closes any open panel and returns to hub grid
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    const open = hubPanels.find((p) => !p.hidden);
+    if (open) {
+      e.preventDefault();
+      closeHubPanels();
+      const id = open.id.replace("panel-", "");
+      document.querySelector(`[data-dest="${id}"]`)?.focus();
+    }
+  }
+});
+
+// Deep link: #distractions etc.
+if (window.location.hash) {
+  const hash = window.location.hash.slice(1);
+  if (["distractions", "dreams", "realworld", "choice"].includes(hash)) {
+    // Defer until after fonts/scroll ready
+    requestAnimationFrame(() => openHubPanel(hash));
+  }
+}
+
+// Reveal hub when it enters viewport — continuous, no pin overlap
+if (hub) {
+  ScrollTrigger.create({
+    trigger: hub,
+    start: "top 85%",
+    onEnter: () => hub.classList.add("is-visible"),
+    onEnterBack: () => hub.classList.add("is-visible"),
+    onLeaveBack: () => {
+      // keep visible once revealed; comment out to hide on scroll up past hub
+    },
+  });
+  // Also add subtle parallax for hub-threads SVG (restrained)
+  const hubThreads = document.querySelector(".hub-threads");
+  if (hubThreads && !reducedPreference.matches) {
+    gsap.fromTo(
+      hubThreads,
+      { y: 8, opacity: 0.7 },
+      {
+        y: -8,
+        opacity: 1,
+        ease: "none",
+        scrollTrigger: {
+          trigger: hub,
+          start: "top bottom",
+          end: "bottom top",
+          scrub: true,
+        },
+      },
+    );
+  }
+}
+
 // Rebuild caches only when the actual stage size changes. 100svh prevents
 // mobile browser chrome from resizing the story during a normal scroll.
 let cachedWidth = stage.clientWidth;

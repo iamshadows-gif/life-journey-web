@@ -261,7 +261,9 @@ export class LifeScene {
     // The last four years decelerate to stillness, with no accumulated state.
     const geometryAge = quietAge(age);
     const ending = smooth(80, 84, age);
-    this.drawStars(age);
+    // Decorative starfield fades after the original ending to make room for hub
+    const decorativeStarsAlpha = 1 - smooth(82, 85, age);
+    this.drawStars(age, decorativeStarsAlpha);
     this.drawAxis(age, ending);
     this.drawNowLine(ending);
 
@@ -433,7 +435,8 @@ export class LifeScene {
     c.restore();
   }
 
-  drawStars(age) {
+  drawStars(age, alpha = 1) {
+    if (alpha <= 0.001) return;
     const c = this.ctx;
     for (const star of this.stars) {
       const twinkle = this.reduced
@@ -441,12 +444,12 @@ export class LifeScene {
         : 0.75 + 0.25 * Math.sin(age * 0.21 + star.phase);
       const x = star.x * this.w;
       const y = 0.07 * this.h + star.y * this.h * 0.86;
-      c.fillStyle = `rgba(194,207,228,${star.opacity * twinkle})`;
+      c.fillStyle = `rgba(194,207,228,${star.opacity * twinkle * alpha})`;
       c.beginPath();
       c.arc(x, y, star.radius, 0, Math.PI * 2);
       c.fill();
       if (star.bright) {
-        c.strokeStyle = `rgba(183,203,225,${star.opacity * 0.3 * twinkle})`;
+        c.strokeStyle = `rgba(183,203,225,${star.opacity * 0.3 * twinkle * alpha})`;
         c.lineWidth = 0.6;
         c.beginPath();
         c.moveTo(x - 2.5, y);
