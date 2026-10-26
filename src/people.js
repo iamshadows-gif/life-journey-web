@@ -3,10 +3,10 @@
  *
  * Ages are the age of “Me”, not the age of the other person.
  * A negative startAge means they are already here when our story begins.
- * endAge: null = this person remains alive through the story.
- * At endAge, the dot rises to skyX/skyY, rests, and only then fades away.
- * The full goodbye takes eight story years; no permanent labeled star remains.
- * leaveAge is different: a passing connection drifts off to a screen edge.
+ * endAge: null = this person remains alive through the story and stays on the now line.
+ * At endAge the dot rises to skyX/skyY and remains there as a persistent star.
+ * leaveAge is a temporary passing connection — it drifts off-frame left/right
+ * and disappears. Only family become stars.
  * divergeAge / divergeLaneX creates an independent path that stays on-screen.
  * laneX and sky positions are normalized coordinates (0…1).
  * enterFrom sweeps a new thread in from an edge. origin makes a birth branch
@@ -40,11 +40,9 @@ export const PEOPLE = [
     name: "Me",
     color: "#dfbd76",
     startAge: 0,
-    endAge: 77,
+    endAge: null,
     laneX: 0.49,
     enterFrom: null,
-    skyX: 0.52,
-    skyY: 0.16,
     isMe: true,
   },
   {
@@ -70,6 +68,7 @@ export const PEOPLE = [
     skyY: 0.2,
   },
 
+  // Temporary connections — drift off and disappear, no stars
   {
     id: "school-friend",
     name: "Kindergarten friend",
@@ -114,15 +113,18 @@ export const PEOPLE = [
     laneX: 0.28,
     enterFrom: "left",
   },
+  // Family — rises and remains as interconnected stars
   {
-    id: "partner",
-    name: "Partner",
+    id: "wife",
+    name: "Wife",
     color: "#83bdb5",
     startAge: 28,
-    endAge: null,
+    endAge: 78,
     laneX: 0.61,
     enterFrom: "right",
     enterYears: 3.5,
+    skyX: 0.62,
+    skyY: 0.09,
   },
   {
     id: "child",
@@ -132,13 +134,15 @@ export const PEOPLE = [
     endAge: null,
     laneX: 0.76,
     enterFrom: null,
-    origin: "partner",
+    origin: "wife",
     enterYears: 3,
     // An independent route, not an exit: the child never leaves the canvas.
+    // Stays parallel but distinctly farther from Me.
     divergeAge: 68,
     divergeYears: 10,
-    divergeLaneX: 0.9,
+    divergeLaneX: 0.92,
   },
+  // Temporary again
   {
     id: "coworker",
     name: "Coworker",
@@ -193,23 +197,51 @@ export const CHAPTERS = [
     note: ["A hand to hold. A new beginning.", "More than we were before."],
   },
   {
-    age: 49,
+    age: 36,
     number: "05",
+    label: "A new thread",
+    lines: ["A new thread", "begins."],
+    note: ["A child arrives. The world grows wider.", "Love learns a new shape."],
+  },
+  {
+    age: 49,
+    number: "06",
     label: "The light that stays",
     lines: ["Love changes shape.", "Not its meaning."],
     note: ["What leaves our hands", "does not leave our hearts."],
   },
-  { age: 80, number: "06", label: "The journey", lines: [], note: [] },
+  {
+    age: 56,
+    number: "07",
+    label: "What we carry",
+    lines: ["We carry them", "with us."],
+    note: ["Not gone — just above.", "A quieter kind of near."],
+  },
+  {
+    age: 66,
+    number: "08",
+    label: "A parallel road",
+    lines: ["A parallel road", "appears."],
+    note: ["A little farther now, still beside us.", "Their own way forward."],
+  },
+  {
+    age: 76,
+    number: "09",
+    label: "Still here",
+    lines: ["Still here.", "Still connected."],
+    note: ["Every light remains.", "And we meet them all again."],
+  },
+  { age: 82, number: "10", label: "The journey", lines: [], note: [] },
 ];
 
 export const MAX_AGE = 85;
 export const SCROLL_DISTANCE = 9000;
-// An unhurried goodbye: rise first, stay visible above, then slowly fade.
+// Rise is visible and unhurried; after rising the star stays permanently.
 export const DEATH_RISE_YEARS = 4;
 export const DEATH_HOLD_YEARS = 1;
 export const DEATH_FADE_YEARS = 3;
 export const DEATH_YEARS =
   DEATH_RISE_YEARS + DEATH_HOLD_YEARS + DEATH_FADE_YEARS;
-// The final message begins only after Me has reached the upper sky.
+// The final message begins after the last stars have settled.
 export const ENDING_REVEAL_AGE = 82;
 export const LEAVE_YEARS = 4;

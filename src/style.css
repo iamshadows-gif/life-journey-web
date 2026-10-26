@@ -471,6 +471,174 @@ a {
     gap: 0;
   }
 }
+/* ── Continuation: TIME FLIES ──────────────────────────────────────────── */
+#continuation {
+  position: relative;
+  background: #02040a;
+}
+#darkness {
+  position: relative;
+  height: 68vh;
+  min-height: 380px;
+  background: linear-gradient(180deg, #080d18 0%, #04070f 42%, #02040a 100%);
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+.darkness-veil {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 12%, rgba(216,189,128,0.07), transparent 58%);
+  opacity: 0.95;
+}
+.darkness-caption {
+  position: relative;
+  z-index: 1;
+  font-family: Cormorant, Georgia, serif;
+  font-style: italic;
+  font-size: clamp(14px, 2.4vw, 18px);
+  color: rgba(233,231,223,0.42);
+  letter-spacing: 0.04em;
+  opacity: 0.9;
+}
+#timeflies {
+  position: relative;
+  min-height: 108svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(32px, 6vw, 80px) var(--edge);
+  background: #02040a;
+  text-align: center;
+  overflow: hidden;
+}
+.timeflies-title {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.08em;
+  font-family: Cormorant, Georgia, serif;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 0.9;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #efe9d9;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.timeflies-word {
+  display: flex;
+  gap: 0.06em;
+  font-size: clamp(52px, 15vw, 168px);
+}
+.timeflies-word + .timeflies-word {
+  font-style: italic;
+  color: #d8bd80;
+  font-size: clamp(52px, 15vw, 170px);
+  letter-spacing: 0.06em;
+}
+.timeflies-word span {
+  display: inline-block;
+  will-change: opacity, filter, transform;
+  /* Entrance will be set via JS (GSAP) — initial for no-JS fallback */
+}
+.timeflies-word span.is-dissolving {
+  opacity: 0 !important;
+  filter: blur(14px) !important;
+  transform: translateY(10px) translateX(var(--dx, 0px)) scale(0.92) rotate(var(--rot, 0deg)) !important;
+}
+.timeflies-hint {
+  margin: 22px 0 0;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #7a8190;
+  opacity: 0.85;
+  transition: opacity 0.6s ease;
+}
+#timeflies.is-touched .timeflies-word span {
+  opacity: 0;
+  filter: blur(10px);
+  transform: translateY(8px) scale(0.9);
+}
+#clock-section {
+  position: relative;
+  min-height: 280vh;
+  background: #02040a;
+  display: block;
+  padding: 0;
+  overflow: clip;
+}
+.clock-wrap {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: 32px var(--edge) 48px;
+  background: #02040a;
+}
+#giant-clock {
+  width: clamp(280px, 72vw, 560px);
+  height: clamp(280px, 72vw, 560px);
+  max-width: 90vw;
+  max-height: 62vh;
+  display: block;
+  overflow: visible;
+  opacity: 0.98;
+}
+.clock-face {
+  fill: none;
+  stroke: rgba(216,189,128,0.22);
+  stroke-width: 1.15;
+  /* Construction: drawn via stroke-dasharray */
+}
+.clock-ticks line {
+  stroke: rgba(199,208,221,0.28);
+  stroke-width: 1;
+  stroke-linecap: round;
+  opacity: 0;
+}
+.clock-ticks line.minor {
+  stroke: rgba(199,208,221,0.12);
+  stroke-width: 0.7;
+}
+#hour-hand {
+  stroke: #d8bd80;
+  stroke-width: 3.2;
+  stroke-linecap: round;
+  opacity: 0;
+}
+#minute-hand {
+  stroke: #e9e7df;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  opacity: 0;
+}
+.clock-center {
+  fill: #e9e7df;
+  stroke: #02040a;
+  stroke-width: 1.2;
+  opacity: 0;
+  transform: scale(0.6);
+  transform-origin: 200px 200px;
+}
+.clock-caption {
+  margin: 18px 0 0;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #7f8896;
+  text-align: center;
+  opacity: 0.9;
+}
+@media (max-width: 600px) {
+  .timeflies-word { font-size: clamp(46px, 18vw, 110px); }
+  .timeflies-word + .timeflies-word { font-size: clamp(46px, 18vw, 112px); }
+  #giant-clock { width: clamp(260px, 86vw, 420px); height: clamp(260px, 86vw, 420px); }
+  #darkness { height: 52vh; min-height: 300px; }
+}
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -478,4 +646,9 @@ a {
     animation: none !important;
     transition: none !important;
   }
+}
+@media (prefers-reduced-motion: reduce) {
+  .timeflies-word span { transition: opacity 0.25s !important; filter: none !important; transform: none !important; }
+  .timeflies-word span.is-dissolving { filter: none !important; transform: none !important; }
+  .clock-ticks line, #hour-hand, #minute-hand, .clock-center { opacity: 1 !important; transform: none !important; }
 }

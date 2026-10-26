@@ -2,7 +2,6 @@ import {
   PEOPLE,
   CHAPTERS,
   MAX_AGE,
-  DEATH_YEARS,
   DEATH_RISE_YEARS,
   DEATH_HOLD_YEARS,
   ENDING_REVEAL_AGE,
@@ -191,8 +190,11 @@ export class LifeScene {
           : smooth(p.startAge, p.startAge + (p.enterYears || 5), age);
       if (p.endAge !== null)
         weight *= 1 - smooth(p.endAge, p.endAge + DEATH_RISE_YEARS, age);
-      if (p.leaveAge != null)
-        weight *= 1 - smooth(p.leaveAge, p.leaveAge + LEAVE_YEARS, age);
+      if (p.leaveAge != null) {
+        // If this person becomes a star (has sky), they stop contributing after rise
+        const riseYears = p.skyX != null ? LEAVE_YEARS : LEAVE_YEARS;
+        weight *= 1 - smooth(p.leaveAge, p.leaveAge + riseYears, age);
+      }
       total += weight;
       sum += p.laneX * weight;
     }
@@ -220,7 +222,9 @@ export class LifeScene {
       if (origin)
         x = mix(this.laneAt(origin, age, shift, driftAge), base, entrance);
     }
-    if (p.leaveAge != null) {
+    // For people who become stars, do NOT drift off-screen horizontally.
+    // Their rise is handled in render() by moving to skyPoint.
+    if (p.leaveAge != null && p.skyX == null) {
       const departure = smooth(p.leaveAge, p.leaveAge + LEAVE_YEARS, age);
       x = mix(
         x,
@@ -238,7 +242,7 @@ export class LifeScene {
 
   skyPoint(p) {
     // Keep every lift target below the masthead and inside the canvas, even
-    // on a short phone viewport. These are temporary resting points only.
+    // on a short phone viewport. These are persistent star positions.
     const top = this.h < 600 ? 85 : 96;
     return {
       x: clamp((p.skyX ?? 0.5) * this.w, this.axisX + 24, this.w - 40),
@@ -257,72 +261,182 @@ export class LifeScene {
     // The last four years decelerate to stillness, with no accumulated state.
     const geometryAge = quietAge(age);
     const ending = smooth(80, 84, age);
-    this.drawStars(age);
+    // Decorative starfield fades after the original ending to make room for hub
+    const decorativeStarsAlpha = 1 - smooth(82, 85, age);
+    this.drawStars(age, decorativeStarsAlpha);
     this.drawAxis(age, ending);
     this.drawNowLine(ending);
 
     const shift = this.centerShift(age);
     const tips = [];
+    const starPositions = [];
+    let mePos = null;
+
+    // Identify Me for constellation anchor
+    const mePerson = this.byId.get("me");
+
     for (const p of PEOPLE) {
       if (age < p.startAge) continue;
       const born =
         p.startAge <= 0 ? 1 : smooth(p.startAge, p.startAge + 0.8, age);
-      const leave =
-        p.leaveAge == null
-          ? 0
-          : smooth(p.leaveAge, p.leaveAge + LEAVE_YEARS, age);
-      if (leave >= 1) continue;
-      const departing = p.endAge != null && age >= p.endAge;
-      const sinceDeparture = departing ? age - p.endAge : 0;
-      const rise = clamp(sinceDeparture / DEATH_RISE_YEARS);
-      // No fading during the ascent: rise for four years, rest for one,
-      // then fade over three. A finished goodbye leaves no permanent star.
-      const departureFade = smooth(
-        DEATH_RISE_YEARS + DEATH_HOLD_YEARS,
-        DEATH_YEARS,
-        sinceDeparture,
-      );
-      if (departing && sinceDeparture >= DEATH_YEARS) continue;
-      const alpha = born * (1 - leave);
-      if (!alpha) continue;
-      if (rise < 1)
+
+      // Determine if this person becomes a persistent star
+      const becomesStar = p.endAge !== null || (p.leaveAge != null && p.skyX != null);
+      let departureAge = null;
+      let riseDuration = DEATH_RISE_YEARS;
+      if (p.endAge !== null) {
+        departureAge = p.endAge;
+        riseDuration = DEATH_RISE_YEARS;
+      } else if (p.leaveAge != null && p.skyX != null) {
+        departureAge = p.leaveAge;
+        riseDuration = LEAVE_YEARS;
+      }
+
+      if (becomesStar) {
+        const isDeparting = age >= departureAge;
+        const sinceDeparture = isDeparting ? age - departureAge : 0;
+        const rise = isDeparting ? clamp(sinceDeparture / riseDuration) : 0;
+
+        // Thread is visible only before/during rise; after rise it dissolves (star remains)
+        if (!isDeparting || rise < 1) {
+          this.drawThread(
+            p,
+            age,
+            shift,
+            rise,
+            born * (1 - ending * 0.83),
+            geometryAge,
+          );
+        }
+
+        let x = this.laneAt(p, age, shift, geometryAge);
+        let y = this.nowY;
+        if (isDeparting) {
+          const originX = this.laneAt(p, departureAge, this.centerShift(departureAge));
+          const sky = this.skyPoint(p);
+          const travel = smooth(0, 1, rise);
+          x = mix(originX, sky.x, travel);
+          y =
+            mix(this.nowY, sky.y, travel) -
+            Math.sin(travel * Math.PI) * this.h * 0.025;
+          // Collect for constellation (all stars that have started rising)
+          starPositions.push({ p, x, y, rise, sky });
+        }
+
+        // Track Me position for constellation
+        if (p.id === "me") mePos = { x, y };
+
+        // Stars never fade — they stay fully visible once they arrive
+        const presence = born;
+        // Ending dimming should not hide stars; only non-stars dim
+        const alphaForDot = presence * (isDeparting ? 1 : 1 - ending * 0.84);
+        this.drawDot(p, x, y, alphaForDot, isDeparting);
+
+        // Labels: stars keep their labels in the sky, living keep near now line
+        if (x > this.axisX + 15 && x < this.w - 16) {
+          const labelAlpha = isDeparting ? presence : presence * (1 - smooth(80, 82.5, age));
+          tips.push({
+            p,
+            x,
+            y,
+            alpha: labelAlpha,
+            isStar: isDeparting,
+          });
+        }
+      } else {
+        // Regular non-star logic (should only be child/Me now, but kept for safety)
+        const leave =
+          p.leaveAge == null
+            ? 0
+            : smooth(p.leaveAge, p.leaveAge + LEAVE_YEARS, age);
+        if (leave >= 1) continue;
+        const alpha = born * (1 - leave);
+        if (!alpha) continue;
+        // No death handling here since becomesStar already covered endAge
         this.drawThread(
           p,
           age,
           shift,
-          rise,
+          0,
           alpha * (1 - ending * 0.83),
           geometryAge,
         );
-      let x = this.laneAt(p, age, shift, geometryAge);
-      let y = this.nowY;
-      if (departing) {
-        const originX = this.laneAt(p, p.endAge, this.centerShift(p.endAge));
-        const sky = this.skyPoint(p);
-        const travel = smooth(0, 1, rise);
-        x = mix(originX, sky.x, travel);
-        y =
-          mix(this.nowY, sky.y, travel) -
-          Math.sin(travel * Math.PI) * this.h * 0.025;
+        let x = this.laneAt(p, age, shift, geometryAge);
+        let y = this.nowY;
+        if (p.id === "me") mePos = { x, y };
+        const presence = alpha;
+        this.drawDot(p, x, y, presence * (1 - ending * 0.84), false);
+        if (x > this.axisX + 15 && x < this.w - 16)
+          tips.push({
+            p,
+            x,
+            y,
+            alpha: presence * (1 - smooth(80, 82.5, age)),
+            isStar: false,
+          });
       }
-      const presence = alpha * (1 - departureFade);
-      // Ending dimming must not hide Me before the last ascent has completed.
-      this.drawDot(p, x, y, presence * (departing ? 1 : 1 - ending * 0.84));
-      if (x > this.axisX + 15 && x < this.w - 16)
-        tips.push({
-          p,
-          x,
-          y,
-          alpha: presence * (departing ? 1 : 1 - smooth(80, 82.5, age)),
-        });
     }
+
+    // Draw constellation connecting Me to all stars at the end
+    if (mePos && starPositions.length) {
+      this.drawConstellation(mePos, starPositions, age);
+    }
+
     this.drawLabels(tips);
     this.drawNarrative(age);
     this.drawEnding(age);
     c.globalAlpha = 1;
   }
 
-  drawStars(age) {
+  drawConstellation(mePos, stars, age) {
+    const c = this.ctx;
+    // Fade in from ~72 to 82, stay visible through ending
+    const constellationAlpha = smooth(70, 80, age);
+    if (constellationAlpha < 0.01) return;
+    c.save();
+    c.globalAlpha = constellationAlpha * 0.55;
+    // Soft outer glow for constellation lines
+    c.lineWidth = 0.7;
+    c.lineCap = "round";
+    c.shadowBlur = this.reduced ? 0 : 6;
+    c.shadowColor = "rgba(216,189,128,0.25)";
+    for (const star of stars) {
+      // Only connect stars that have meaningfully risen (avoid lines snapping from now line before departure)
+      if (star.rise < 0.15) continue;
+      c.strokeStyle = rgba(star.p.color, 0.45);
+      c.beginPath();
+      c.moveTo(mePos.x, mePos.y);
+      // Gentle curve upward
+      const mx = (mePos.x + star.x) / 2;
+      const my = (mePos.y + star.y) / 2 - this.h * 0.015;
+      c.quadraticCurveTo(mx, my, star.x, star.y);
+      c.stroke();
+    }
+    // Optionally connect stars to each other faintly for a fuller constellation
+    // Keep it subtle: only between nearby stars when fully risen
+    if (age > 78) {
+      c.globalAlpha = constellationAlpha * 0.18;
+      c.shadowBlur = 0;
+      c.lineWidth = 0.5;
+      for (let i = 0; i < stars.length; i++) {
+        for (let j = i + 1; j < stars.length; j++) {
+          const a = stars[i], b = stars[j];
+          if (a.rise < 0.95 || b.rise < 0.95) continue;
+          const dist = Math.hypot(a.x - b.x, a.y - b.y);
+          if (dist > this.w * 0.45) continue; // only nearby
+          c.strokeStyle = "rgba(180,190,210,0.35)";
+          c.beginPath();
+          c.moveTo(a.x, a.y);
+          c.lineTo(b.x, b.y);
+          c.stroke();
+        }
+      }
+    }
+    c.restore();
+  }
+
+  drawStars(age, alpha = 1) {
+    if (alpha <= 0.001) return;
     const c = this.ctx;
     for (const star of this.stars) {
       const twinkle = this.reduced
@@ -330,12 +444,12 @@ export class LifeScene {
         : 0.75 + 0.25 * Math.sin(age * 0.21 + star.phase);
       const x = star.x * this.w;
       const y = 0.07 * this.h + star.y * this.h * 0.86;
-      c.fillStyle = `rgba(194,207,228,${star.opacity * twinkle})`;
+      c.fillStyle = `rgba(194,207,228,${star.opacity * twinkle * alpha})`;
       c.beginPath();
       c.arc(x, y, star.radius, 0, Math.PI * 2);
       c.fill();
       if (star.bright) {
-        c.strokeStyle = `rgba(183,203,225,${star.opacity * 0.3 * twinkle})`;
+        c.strokeStyle = `rgba(183,203,225,${star.opacity * 0.3 * twinkle * alpha})`;
         c.lineWidth = 0.6;
         c.beginPath();
         c.moveTo(x - 2.5, y);
@@ -425,7 +539,7 @@ export class LifeScene {
     c.restore();
   }
 
-  drawThread(p, age, shift, death, alpha, geometryAge) {
+  drawThread(p, age, shift, rise, alpha, geometryAge) {
     const c = this.ctx;
     let maxY = this.h + 25;
     if (p.origin)
@@ -433,7 +547,7 @@ export class LifeScene {
         maxY,
         this.nowY + ((age - p.startAge) / this.historyYears) * this.trailHeight,
       );
-    const minY = this.nowY + Math.pow(death, 0.8) * this.trailHeight;
+    const minY = this.nowY + Math.pow(rise, 0.8) * this.trailHeight;
     if (maxY <= minY + 0.5) return;
     const points = [];
     const phase = this.phases.get(p.id);
@@ -460,7 +574,7 @@ export class LifeScene {
       });
     }
     c.save();
-    c.globalAlpha = alpha * (1 - smooth(0, 1, death)) * (p.isMe ? 1 : 0.82);
+    c.globalAlpha = alpha * (1 - smooth(0, 1, rise)) * (p.isMe ? 1 : 0.82);
     c.strokeStyle = this.threadGradients.get(p.id);
     c.lineWidth = p.isMe ? 1.65 : 1.3;
     c.lineCap = "round";
@@ -482,20 +596,20 @@ export class LifeScene {
     c.restore();
   }
 
-  drawDot(p, x, y, alpha) {
+  drawDot(p, x, y, alpha, isStar = false) {
     if (x < -60 || x > this.w + 60) return;
     const c = this.ctx;
     c.save();
     c.globalAlpha = alpha;
-    const size = this.reduced ? 26 : p.isMe ? 62 : 46;
+    const size = this.reduced ? 26 : p.isMe ? 62 : isStar ? 52 : 46;
     c.drawImage(this.glows.get(p.id), x - size / 2, y - size / 2, size, size);
     c.fillStyle = rgba(p.color, 0.45);
     c.beginPath();
-    c.arc(x, y, p.isMe ? 3.6 : 3.0, 0, Math.PI * 2);
+    c.arc(x, y, p.isMe ? 3.6 : isStar ? 3.2 : 3.0, 0, Math.PI * 2);
     c.fill();
     c.fillStyle = p.isMe ? "#fff2c9" : "#f1f2ef";
     c.beginPath();
-    c.arc(x, y, p.isMe ? 2.1 : 1.8, 0, Math.PI * 2);
+    c.arc(x, y, p.isMe ? 2.1 : isStar ? 2.0 : 1.8, 0, Math.PI * 2);
     c.fill();
     if (p.isMe) {
       c.lineWidth = 0.55;
@@ -505,6 +619,29 @@ export class LifeScene {
       c.lineTo(x + 6, y);
       c.moveTo(x, y - 6);
       c.lineTo(x, y + 6);
+      c.stroke();
+    }
+    if (isStar) {
+      // Subtle star sparkle — four-point cross, slightly brighter for stars
+      c.globalAlpha = alpha * 0.9;
+      c.lineWidth = 0.6;
+      c.strokeStyle = "rgba(255,255,255,0.65)";
+      const s = 5.5;
+      c.beginPath();
+      c.moveTo(x - s, y);
+      c.lineTo(x + s, y);
+      c.moveTo(x, y - s);
+      c.lineTo(x, y + s);
+      c.stroke();
+      // Diagonal sparkle faint
+      c.globalAlpha = alpha * 0.35;
+      c.lineWidth = 0.45;
+      const d = 3.8;
+      c.beginPath();
+      c.moveTo(x - d, y - d);
+      c.lineTo(x + d, y + d);
+      c.moveTo(x + d, y - d);
+      c.lineTo(x - d, y + d);
       c.stroke();
     }
     c.restore();
@@ -529,7 +666,8 @@ export class LifeScene {
         this.axisX + width / 2 + 7,
         this.w - width / 2 - 25,
       );
-      let labelY = y - 20;
+      // Stars sit high; keep label a bit closer to avoid crowding header
+      let labelY = y - (tip.isStar ? 18 : 20);
       for (let tries = 0; tries < 8; tries++) {
         const collides = placed.some(
           (rect) =>
@@ -540,7 +678,7 @@ export class LifeScene {
         labelY -= 17;
       }
       c.globalAlpha = tip.alpha;
-      if (y - labelY > 28) {
+      if (Math.abs(y - labelY) > 28) {
         c.strokeStyle = rgba(p.color, 0.21);
         c.lineWidth = 0.6;
         c.beginPath();
@@ -565,22 +703,9 @@ export class LifeScene {
     const incoming =
       index === 0 ? 1 : smooth(chapter.age, chapter.age + 1.6, age);
     const outgoing = next ? 1 - smooth(next.age - 1.7, next.age, age) : 1;
-    // Give each ascent a moment of quiet. Once a dot has reached the sky,
-    // the poem can return while that light rests and slowly fades.
-    let departureFocus = 0;
-    for (const person of PEOPLE) {
-      if (person.endAge === null) continue;
-      const arriving = smooth(person.endAge - 0.5, person.endAge + 0.45, age);
-      const settled =
-        1 -
-        smooth(
-          person.endAge + DEATH_RISE_YEARS - 0.25,
-          person.endAge + DEATH_RISE_YEARS + 0.65,
-          age,
-        );
-      departureFocus = Math.max(departureFocus, arriving * settled);
-    }
-    const alpha = incoming * outgoing * (1 - departureFocus);
+    // Narrative now shows once per chapter without repeated dimming.
+    // Stars persist, so we no longer hide text during each ascent.
+    const alpha = incoming * outgoing;
     if (alpha < 0.001) return;
     const c = this.ctx;
     const x = this.mobile ? 48 : this.w * 0.11;

@@ -77,38 +77,45 @@
           </button>
           <button
             class="chapter-tick"
-            data-age="10"
+            data-age="7"
             aria-label="Chapter 2: Our first connections"
           >
             <span>02</span>
           </button>
           <button
             class="chapter-tick"
-            data-age="22"
+            data-age="18"
             aria-label="Chapter 3: Crossing paths"
           >
             <span>03</span>
           </button>
           <button
             class="chapter-tick"
-            data-age="36"
+            data-age="30"
             aria-label="Chapter 4: A little fuller"
           >
             <span>04</span>
           </button>
           <button
             class="chapter-tick"
-            data-age="62"
+            data-age="49"
             aria-label="Chapter 5: The light that stays"
           >
             <span>05</span>
           </button>
           <button
             class="chapter-tick"
-            data-age="85"
-            aria-label="Chapter 6: The journey"
+            data-age="66"
+            aria-label="Chapter 6: A parallel road"
           >
             <span>06</span>
+          </button>
+          <button
+            class="chapter-tick"
+            data-age="85"
+            aria-label="Chapter 7: The journey"
+          >
+            <span>07</span>
           </button>
         </nav>
 
@@ -129,18 +136,6 @@
             <span aria-hidden="true">↺</span> Begin again
           </button>
           <p class="footer-note">Every connection leaves a little light.</p>
-          <button
-            class="sound-toggle"
-            id="sound-toggle"
-            type="button"
-            aria-label="Turn ambient sound on"
-            aria-pressed="false"
-          >
-            <span class="sound-bars" aria-hidden="true"
-              ><i></i><i></i><i></i><i></i><i></i
-            ></span>
-            <span id="sound-label">Sound off</span>
-          </button>
         </footer>
 
         <div class="progress-rail" aria-hidden="true">
@@ -160,31 +155,62 @@
           <p>Some stay. Some pass through. All leave a little light.</p>
           <p>
             Scroll down to move through 85 years. Scroll up to revisit the past.
-            You can also use the chapter buttons, arrow keys, or Page Down. Turn
-            on sound for a soft ambient accompaniment.
+            You can also use the chapter buttons, arrow keys, or Page Down.
           </p>
           <p>
-            Our lives begin with family. Friends find us, a partner joins us,
-            and a child is born. Departing lights rise into the sky, rest there,
-            then slowly fade away. Later, the child follows an independent path
-            that stays in view. Me rises last, before the closing message.
+            Our lives begin with family. Friends find us, a wife joins us,
+            and a child is born. Departing lights rise into the sky and remain
+            there as stars — they never fade away. Later, the child follows a
+            distant parallel road that stays in view. At the end, all stars
+            connect to Me in a quiet constellation.
           </p>
           <h2>Life is a journey</h2>
           <p>
-            Some threads end. Their light never does.<br />And somehow, we are
+            Some threads rise. Their light never fades.<br />And somehow, we are
             still connected.
           </p>
         </div>
       </section>
+      <!-- Continuation: TIME FLIES — cinematic, minimal, dark -->
+      <div id="continuation" aria-label="Continuation">
+        <!-- 1. Darkness: fades the journey into near-black -->
+        <section id="darkness" aria-hidden="true">
+          <div class="darkness-veil"></div>
+          <p class="darkness-caption" aria-hidden="true">and then —</p>
+        </section>
+
+        <!-- 2. TIME FLIES: enormous elegant typography -->
+        <section id="timeflies" aria-labelledby="timeflies-title">
+          <h2 id="timeflies-title" class="timeflies-title" aria-label="Time flies">
+            <span class="timeflies-word" data-word="TIME"><span>T</span><span>I</span><span>M</span><span>E</span></span>
+            <span class="timeflies-word" data-word="FLIES"><span>F</span><span>L</span><span>I</span><span>E</span><span>S</span></span>
+          </h2>
+          <p class="timeflies-hint" id="timeflies-hint">Move your pointer across the words — or tap on touchscreens</p>
+        </section>
+
+        <!-- 3. Giant Clock: scroll-driven, minimal -->
+        <section id="clock-section" aria-labelledby="clock-title">
+          <h2 id="clock-title" class="sr-only">A clock moving with scroll</h2>
+          <div class="clock-wrap">
+            <svg
+              id="giant-clock"
+              viewBox="0 0 400 400"
+              role="img"
+              aria-label="A large minimalist clock whose hands advance as you scroll. Scroll backward reverses them."
+            >
+              <circle class="clock-face" cx="200" cy="200" r="188" />
+              <g class="clock-ticks" aria-hidden="true"></g>
+              <g id="clock-hands" style="transform-origin: 200px 200px">
+                <line id="hour-hand" x1="200" y1="200" x2="200" y2="118" />
+                <line id="minute-hand" x1="200" y1="200" x2="200" y2="74" />
+              </g>
+              <circle cx="200" cy="200" r="3.2" class="clock-center" />
+            </svg>
+            <p class="clock-caption">Scroll to move time. Reverse to go back.</p>
+          </div>
+        </section>
+      </div>
     </main>
-    <audio
-      id="ambient"
-      src="/audio/ambient.wav"
-      loop
-      muted
-      preload="none"
-      aria-label="Soft ambient soundscape"
-    ></audio>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
