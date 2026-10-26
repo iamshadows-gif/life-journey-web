@@ -744,11 +744,198 @@ a {
   text-align: center;
   opacity: 0.9;
 }
+
+/* ── Epilogue: memory → thank you → credit (cinematic ending) ───────── */
+#epilogue {
+  position: relative;
+  background: #02040a;
+  /* Enough scroll distance for staged reveal without feeling endless */
+  min-height: 520vh;
+  overflow: clip;
+}
+.epilogue-glow {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 92vw;
+  max-width: 960px;
+  height: 42vh;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at 50% 0%, rgba(216,189,128,0.09), transparent 62%);
+  opacity: 0;
+  pointer-events: none;
+  will-change: opacity;
+}
+/* Memory — centerpiece */
+.memory-wrap {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: 32px var(--edge);
+  text-align: center;
+  background: #02040a;
+}
+.memory-title {
+  margin: 0;
+  font-family: Cormorant, Georgia, serif;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1.28;
+  letter-spacing: 0.015em;
+  font-size: clamp(26px, 4.6vw, 46px);
+  color: #efe9d9;
+  max-width: 18ch;
+  text-wrap: balance;
+}
+.memory-word {
+  display: inline-block;
+  margin: 0 0.14em;
+  opacity: 0;
+  filter: blur(10px);
+  transform: translateY(10px);
+  will-change: opacity, filter, transform;
+}
+.memory-gold {
+  color: #d8bd80;
+  font-style: italic;
+}
+/* Thanks — thread arc + messages */
+.thanks-wrap {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: 40px var(--edge);
+  background: #02040a;
+  overflow: hidden;
+}
+.thanks-thread {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+}
+#thanks-thread-path {
+  stroke: rgba(216,189,128,0.46);
+  stroke-width: 0.85px;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 6px rgba(216,189,128,0.18));
+  vector-effect: non-scaling-stroke;
+}
+.thanks-glow {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 34vw;
+  max-width: 380px;
+  height: 34vw;
+  max-height: 380px;
+  transform: translate(-50%, -50%) scale(0.72);
+  background: radial-gradient(circle, rgba(216,189,128,0.11), rgba(216,189,128,0.06) 38%, transparent 66%);
+  opacity: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  will-change: opacity, transform;
+}
+.thanks-text {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  opacity: 0;
+}
+.thanks-main {
+  margin: 0;
+  font-family: Cormorant, Georgia, serif;
+  font-size: clamp(22px, 3.8vw, 34px);
+  font-style: italic;
+  color: #efe9d9;
+  letter-spacing: 0.02em;
+  opacity: 0;
+  transform: translateY(8px);
+  filter: blur(6px);
+}
+.thanks-sub {
+  margin: 14px 0 0;
+  font-family: "DM Sans", sans-serif;
+  font-size: clamp(11px, 1.9vw, 13px);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8e95a3;
+  opacity: 0;
+  transform: translateY(8px);
+  filter: blur(6px);
+}
+/* Credit — final */
+.credit-wrap {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: 48px var(--edge) 72px;
+  background: #02040a;
+  text-align: center;
+}
+.credit-made {
+  margin: 0;
+  font-family: Cormorant, Georgia, serif;
+  font-size: clamp(16px, 2.8vw, 20px);
+  color: #c9c7be;
+  letter-spacing: 0.04em;
+  opacity: 0;
+  transform: translateY(6px);
+}
+.credit-made span {
+  color: #efe9d9;
+  position: relative;
+}
+.credit-made span::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(216,189,128,0.55), transparent);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 900ms ease;
+}
+.credit-wrap.is-visible .credit-made span::after { transform: scaleX(1); }
+.credit-social {
+  position: absolute;
+  right: var(--edge);
+  bottom: max(28px, calc(env(safe-area-inset-bottom) + 20px));
+  display: flex;
+  gap: 18px;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0;
+}
+.credit-link {
+  color: #7f8896;
+  padding: 6px 2px;
+  border-bottom: 1px solid transparent;
+  transition: color 240ms ease, border-color 240ms ease, opacity 240ms ease;
+}
+.credit-link:hover, .credit-link:focus-visible {
+  color: var(--gold);
+  border-bottom-color: rgba(216,189,128,0.42);
+}
 @media (max-width: 600px) {
   .timeflies-word { font-size: clamp(46px, 18vw, 110px); }
   .timeflies-word + .timeflies-word { font-size: clamp(46px, 18vw, 112px); }
   #giant-clock { width: clamp(260px, 86vw, 420px); height: clamp(260px, 86vw, 420px); }
   #darkness { height: 52vh; min-height: 300px; }
+  #epilogue { min-height: 460vh; }
+  .memory-title { font-size: clamp(24px, 6.2vw, 36px); max-width: 16ch; }
+  .credit-social { right: auto; left: 50%; transform: translateX(-50%); bottom: max(22px, calc(env(safe-area-inset-bottom) + 16px)); gap: 20px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -762,4 +949,5 @@ a {
   .timeflies-word span { transition: opacity 0.25s !important; filter: none !important; transform: none !important; }
   .timeflies-word span.is-dissolving { filter: none !important; transform: none !important; }
   .clock-ticks line, #hour-hand, #minute-hand, .clock-center { opacity: 1 !important; transform: none !important; }
+  .memory-word, .thanks-main, .thanks-sub, .credit-made, .credit-social { filter: none !important; transform: none !important; }
 }

@@ -673,7 +673,7 @@ if (clockSection && giantClock && hourHand && minuteHand && clockFace && clockCe
     const handProgress = { t: 0 };
     clockTl.to(handProgress, {
       t: 1,
-      duration: 0.9,
+      duration: 0.78,
       ease: "none",
       onUpdate() {
         const p = handProgress.t;
@@ -684,12 +684,15 @@ if (clockSection && giantClock && hourHand && minuteHand && clockFace && clockCe
         gsap.set(hourHand, { rotation: hourDeg, svgOrigin: "200 200" });
       },
     }, 0.52);
+    // Final fade: clock slows to final position and disappears elegantly into darkness
+    clockTl.to(giantClock, { opacity: 0, scale: 0.88, duration: 0.18, ease: "power2.in" }, 0.82);
+    clockTl.to(clockCaption, { opacity: 0, y: 6, duration: 0.14, ease: "none" }, 0.82);
   } else {
     // Reduced motion: simple scrub for hands without construction flourish
     const handProgress = { t: 0 };
     clockTl.to(handProgress, {
       t: 1,
-      duration: 1,
+      duration: 0.78,
       ease: "none",
       onUpdate() {
         const p = handProgress.t;
@@ -697,6 +700,7 @@ if (clockSection && giantClock && hourHand && minuteHand && clockFace && clockCe
         gsap.set(hourHand, { rotation: p * 30, svgOrigin: "200 200" });
       },
     }, 0);
+    clockTl.to(giantClock, { opacity: 0, duration: 0.18, ease: "none" }, 0.82);
   }
 
   // Ensure hands rotate around exact center without drift — correct origin
@@ -707,6 +711,93 @@ if (clockSection && giantClock && hourHand && minuteHand && clockFace && clockCe
   if (clockHandsGroup) {
     clockHandsGroup.style.transformOrigin = "";
     clockHandsGroup.style.transformBox = "";
+  }
+}
+
+// ── 7. Epilogue — memory → thank you → credit (fully scroll-driven) ──
+{
+  const epilogue = document.querySelector("#epilogue");
+  const memoryWrap = document.querySelector("#memory-wrap");
+  const memoryWords = epilogue ? [...epilogue.querySelectorAll(".memory-word")] : [];
+  const epilogueGlow = document.querySelector(".epilogue-glow");
+  const thanksWrap = document.querySelector("#thanks-wrap");
+  const thanksThread = document.querySelector(".thanks-thread");
+  const thanksThreadPath = document.querySelector("#thanks-thread-path");
+  const thanksGlow = document.querySelector(".thanks-glow");
+  const thanksText = document.querySelector("#thanks-text");
+  const thanksMain = document.querySelector(".thanks-main");
+  const thanksSub = document.querySelector(".thanks-sub");
+  const creditWrap = document.querySelector("#credit-wrap");
+  const creditMade = document.querySelector(".credit-made");
+  const creditSocial = document.querySelector(".credit-social");
+
+  if (epilogue && memoryWords.length && !reducedPreference.matches) {
+    // Initial states
+    gsap.set(memoryWords, { opacity: 0, filter: "blur(10px)", y: 10 });
+    gsap.set(epilogueGlow, { opacity: 0 });
+    gsap.set(thanksThread, { opacity: 0 });
+    if (thanksThreadPath) {
+      const tLen = 1180;
+      gsap.set(thanksThreadPath, { strokeDasharray: tLen, strokeDashoffset: tLen });
+    }
+    gsap.set(thanksGlow, { opacity: 0, scale: 0.72 });
+    gsap.set(thanksText, { opacity: 0 });
+    gsap.set([thanksMain, thanksSub], { opacity: 0, y: 8, filter: "blur(6px)" });
+    gsap.set(creditMade, { opacity: 0, y: 6 });
+    gsap.set(creditSocial, { opacity: 0 });
+
+    const epiTl = gsap.timeline({
+      scrollTrigger: {
+        trigger: epilogue,
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 1,
+      },
+    });
+
+    // Warm glow emerges from darkness as clock has faded (0 → 0.08)
+    epiTl.to(epilogueGlow, { opacity: 0.92, duration: 0.12, ease: "none" }, 0);
+    // Memory staged reveal — slow blur-to-sharp, word by word
+    epiTl.to(memoryWords, {
+      opacity: 1,
+      filter: "blur(0px)",
+      y: 0,
+      duration: 0.42,
+      ease: "power2.out",
+      stagger: 0.06,
+    }, 0.04);
+    // Hold readable still for a moment (no tweens, just dwell 0.42→0.58)
+    // Memory recedes into darkness (0.58 → 0.72)
+    epiTl.to(memoryWrap, { opacity: 0, scale: 0.94, filter: "blur(6px)", duration: 0.18, ease: "power2.in" }, 0.58);
+    epiTl.to(epilogueGlow, { opacity: 0, duration: 0.18, ease: "none" }, 0.60);
+
+    // Thin golden thread draws itself across screen (0.62 → 0.78)
+    epiTl.to(thanksThread, { opacity: 1, duration: 0.10, ease: "none" }, 0.62);
+    if (thanksThreadPath) {
+      epiTl.to(thanksThreadPath, { strokeDashoffset: 0, duration: 0.24, ease: "power2.inOut" }, 0.64);
+    }
+    // Arc glow gathers near center (0.74 → 0.86)
+    epiTl.to(thanksGlow, { opacity: 0.95, scale: 1, duration: 0.16, ease: "power2.out" }, 0.74);
+    // Thank you appears (0.78 → 0.90)
+    epiTl.to(thanksText, { opacity: 1, duration: 0.10 }, 0.78);
+    epiTl.to(thanksMain, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.16, ease: "power2.out" }, 0.80);
+    epiTl.to(thanksSub, { opacity: 0.92, y: 0, filter: "blur(0px)", duration: 0.16, ease: "power2.out" }, 0.86);
+
+    // Transition to final credit (0.90 → 1.0)
+    epiTl.to([thanksThread, thanksGlow, thanksText], { opacity: 0, duration: 0.14, ease: "power2.in" }, 0.90);
+    epiTl.to(creditMade, { opacity: 1, y: 0, duration: 0.16, ease: "power2.out" }, 0.92);
+    epiTl.set(creditWrap, { className: "credit-wrap is-visible" }, 0.94);
+    epiTl.to(creditSocial, { opacity: 1, duration: 0.16, ease: "none" }, 0.95);
+  } else if (epilogue && memoryWords.length && reducedPreference.matches) {
+    // Reduced motion: simple fades, no blur
+    gsap.set([epilogueGlow, thanksThread, thanksGlow], { opacity: 0 });
+    const epiTl = gsap.timeline({
+      scrollTrigger: { trigger: epilogue, start: "top top", end: "bottom bottom", scrub: 0.8 },
+    });
+    epiTl.to(memoryWords, { opacity: 1, duration: 0.3, stagger: 0.05 }, 0);
+    epiTl.to(memoryWrap, { opacity: 0, duration: 0.2 }, 0.55);
+    epiTl.to(creditMade, { opacity: 1, duration: 0.2 }, 0.85);
+    epiTl.to(creditSocial, { opacity: 1, duration: 0.2 }, 0.90);
   }
 }
 
