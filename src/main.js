@@ -174,6 +174,87 @@ if (clockTicks) {
   }
 }
 
+// ── Elegant custom cursor — replaces native pointer ────────────────────
+// Suits the dark cinematic theme: tiny warm ivory dot + gold ring + soft aura.
+// Hidden on touch / reduced-motion; pointer events stay fully functional.
+let mouseX = -9999;
+let mouseY = -9999;
+let sharedRafId = null; // used by TIME FLIES dissolve
+{
+  const cursorGlow = document.querySelector("#cursor-glow");
+  const cursorCore = cursorGlow?.querySelector(".cursor-glow-core");
+  const cursorDot = cursorGlow?.querySelector(".cursor-dot");
+  const cursorRing = cursorGlow?.querySelector(".cursor-ring");
+  const cursorTrails = cursorGlow ? [...cursorGlow.querySelectorAll(".cursor-trail")] : [];
+  const isTouch = window.matchMedia("(pointer: coarse)").matches;
+  const canUseCustom = cursorGlow && cursorCore && cursorDot && cursorRing && !reducedPreference.matches && !isTouch && window.matchMedia("(pointer: fine)").matches;
+  if (canUseCustom) {
+    document.documentElement.classList.add("has-custom-cursor");
+    let glowVisible = false;
+    let glowIdleTimer = null;
+
+    const qCoreX = gsap.quickTo(cursorCore, "x", { duration: 0.45, ease: "power3.out" });
+    const qCoreY = gsap.quickTo(cursorCore, "y", { duration: 0.45, ease: "power3.out" });
+    const qDotX = gsap.quickTo(cursorDot, "x", { duration: 0.18, ease: "power3.out" });
+    const qDotY = gsap.quickTo(cursorDot, "y", { duration: 0.18, ease: "power3.out" });
+    const qRingX = gsap.quickTo(cursorRing, "x", { duration: 0.32, ease: "power3.out" });
+    const qRingY = gsap.quickTo(cursorRing, "y", { duration: 0.32, ease: "power3.out" });
+    const qxTrail = cursorTrails.map((el) => gsap.quickTo(el, "x", { duration: 0.58, ease: "power2.out" }));
+    const qyTrail = cursorTrails.map((el) => gsap.quickTo(el, "y", { duration: 0.58, ease: "power2.out" }));
+
+    const showGlow = (x, y) => {
+      if (!glowVisible) {
+        cursorGlow.classList.add("is-visible");
+        glowVisible = true;
+      }
+      qCoreX(x); qCoreY(y);
+      qDotX(x); qDotY(y);
+      qRingX(x); qRingY(y);
+      cursorTrails.forEach((_, i) => {
+        setTimeout(() => {
+          qxTrail[i](x); qyTrail[i](y);
+          cursorTrails[i].style.opacity = String(0.44 - i * 0.12);
+        }, (i + 1) * 48);
+      });
+      cursorGlow.classList.remove("is-idle");
+      clearTimeout(glowIdleTimer);
+      glowIdleTimer = setTimeout(() => cursorGlow.classList.add("is-idle"), 520);
+    };
+
+    const onWindowMove = (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      showGlow(mouseX, mouseY);
+      // Hover state for interactive elements — ring expands, suits interface
+      const target = e.target;
+      const isInteractive = target.closest('a, button, [role="button"], .chapter-tick, .wordmark, #timeflies-title span');
+      cursorGlow.classList.toggle("is-hover", !!isInteractive);
+      // Also trigger TIME FLIES dissolve when in view
+      if (timefliesSection && typeof window.__timefliesUpdate === "function") {
+        if (!sharedRafId) sharedRafId = requestAnimationFrame(() => { sharedRafId = null; window.__timefliesUpdate(); });
+      }
+    };
+
+    window.addEventListener("pointermove", onWindowMove, { passive: true });
+    window.addEventListener("pointerleave", () => {
+      cursorGlow.classList.remove("is-visible");
+      cursorGlow.classList.remove("is-hover");
+      glowVisible = false;
+      clearTimeout(glowIdleTimer);
+      cursorTrails.forEach((t) => (t.style.opacity = "0"));
+      mouseX = -9999; mouseY = -9999;
+    });
+    // Hide glow when mouse leaves viewport via blur
+    window.addEventListener("blur", () => {
+      cursorGlow.classList.remove("is-visible");
+      glowVisible = false;
+    });
+  } else if (window.matchMedia("(pointer: coarse)").matches || reducedPreference.matches) {
+    // Ensure fallback: no custom cursor class
+    document.documentElement.classList.remove("has-custom-cursor");
+  }
+}
+
 // ── 2. Seamless transition into darkness ────────────────────────────────
 // Preserve original journey and its ending; the fade is already handled by
 // `ending = smooth(80,84,age)` and `decorativeStarsAlpha = 1 - smooth(82,85)` in scene.js.
@@ -299,70 +380,12 @@ if (timefliesSection && timefliesLetters.length) {
     );
   }
 
-  // ── 4. Hover: dissolve + time-bending stretch + cursor glow ──────────
+  // ── 4. Hover: dissolve + time-bending stretch (cursor glow is global) ─
   const isTouch = window.matchMedia("(pointer: coarse)").matches;
   timefliesSection.setAttribute("tabindex", "0");
   timefliesSection.setAttribute("aria-label", "Time flies — move pointer to dissolve");
 
   let rafId = null;
-  let mouseX = -9999;
-  let mouseY = -9999;
-
-  // Cursor glow elements (only on continuation, not on journey)
-  const cursorGlow = document.querySelector("#cursor-glow");
-  const cursorCore = cursorGlow?.querySelector(".cursor-glow-core");
-  const cursorTrails = cursorGlow ? [...cursorGlow.querySelectorAll(".cursor-trail")] : [];
-  let glowVisible = false;
-  let glowIdleTimer = null;
-  let quickX = null;
-  let quickY = null;
-  const trailPos = cursorTrails.map(() => ({ x: -100, y: -100 }));
-  if (cursorGlow && cursorCore && !prefersReduced && !isTouch) {
-    quickX = gsap.quickTo(cursorCore, "x", { duration: 0.42, ease: "power3.out" });
-    const quickYCore = gsap.quickTo(cursorCore, "y", { duration: 0.42, ease: "power3.out" });
-    const qxTrail = cursorTrails.map((el) => gsap.quickTo(el, "x", { duration: 0.55, ease: "power2.out" }));
-    const qyTrail = cursorTrails.map((el) => gsap.quickTo(el, "y", { duration: 0.55, ease: "power2.out" }));
-    // Move glow with cursor anywhere inside #continuation
-    const updateGlow = (x, y) => {
-      if (!glowVisible) {
-        cursorGlow.classList.add("is-visible");
-        cursorGlow.classList.remove("is-idle");
-        glowVisible = true;
-      }
-      quickX(x);
-      quickYCore(y);
-      // Trail with lag
-      cursorTrails.forEach((_, i) => {
-        setTimeout(() => {
-          qxTrail[i](x);
-          qyTrail[i](y);
-          cursorTrails[i].style.opacity = String(0.52 - i * 0.14);
-        }, (i + 1) * 44);
-      });
-      cursorGlow.classList.remove("is-idle");
-      clearTimeout(glowIdleTimer);
-      glowIdleTimer = setTimeout(() => cursorGlow.classList.add("is-idle"), 560);
-    };
-    // Show only when inside continuation
-    const onContMove = (e) => {
-      const cont = document.querySelector("#continuation");
-      const cr = cont.getBoundingClientRect();
-      const inside = e.clientY >= cr.top && e.clientY <= cr.bottom;
-      if (inside) updateGlow(e.clientX, e.clientY);
-      else if (glowVisible) {
-        cursorGlow.classList.remove("is-visible");
-        cursorGlow.classList.remove("is-idle");
-        glowVisible = false;
-        cursorTrails.forEach((t) => (t.style.opacity = "0"));
-      }
-    };
-    window.addEventListener("pointermove", onContMove, { passive: true });
-    window.addEventListener("pointerleave", () => {
-      cursorGlow.classList.remove("is-visible");
-      glowVisible = false;
-      clearTimeout(glowIdleTimer);
-    });
-  }
 
   // Precompute per-letter random dispersion + bend params
   const hoverMeta = timefliesLetters.map(() => ({
@@ -375,6 +398,7 @@ if (timefliesSection && timefliesLetters.length) {
   }));
 
   function updateDissolve() {
+    sharedRafId = null;
     rafId = null;
     const rect = timefliesSection.getBoundingClientRect();
     const inView = rect.top < window.innerHeight * 0.78 && rect.bottom > window.innerHeight * 0.22;
@@ -437,13 +461,14 @@ if (timefliesSection && timefliesLetters.length) {
     mouseX = e.clientX;
     mouseY = e.clientY;
     if (!rafId) rafId = requestAnimationFrame(updateDissolve);
+    if (!sharedRafId) sharedRafId = requestAnimationFrame(updateDissolve);
   }
 
+  // Expose for global cursor handler to trigger dissolve smoothly
+  window.__timefliesUpdate = updateDissolve;
+
   function onPointerLeave() {
-    mouseX = -9999;
-    mouseY = -9999;
-    // Fade trail
-    cursorTrails.forEach((t) => (t.style.opacity = "0"));
+    // keep global mouseX/Y for custom cursor; just reset dissolve
     for (const span of timefliesLetters) {
       span.style.transition = "opacity 0.9s ease, filter 0.9s ease, transform 0.9s ease";
       span.style.opacity = "";
