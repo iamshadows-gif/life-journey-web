@@ -471,6 +471,68 @@ a {
     gap: 0;
   }
 }
+/* ── Subtle cursor glow (continuation only) ─────────────────────────────── */
+#cursor-glow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 6;
+  opacity: 0;
+  transition: opacity 420ms ease;
+  mix-blend-mode: screen;
+}
+#cursor-glow.is-visible { opacity: 1; }
+#cursor-glow.is-idle .cursor-glow-core { opacity: 0; }
+.cursor-glow-core {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(239,233,217,0.14) 0%, rgba(216,189,128,0.10) 38%, rgba(216,189,128,0.05) 62%, transparent 76%);
+  filter: blur(0.6px);
+  opacity: 0.95;
+  transition: opacity 520ms ease, transform 280ms ease;
+  will-change: transform, opacity;
+}
+.cursor-trail {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  margin: -2px 0 0 -2px;
+  border-radius: 50%;
+  background: rgba(216,189,128,0.42);
+  box-shadow: 0 0 6px rgba(216,189,128,0.35);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+.cursor-trail[data-trail="1"] { width: 3px; height: 3px; background: rgba(239,233,217,0.32); }
+.cursor-trail[data-trail="2"] { width: 2px; height: 2px; background: rgba(216,189,128,0.22); }
+@media (pointer: coarse), (prefers-reduced-motion: reduce) {
+  #cursor-glow { display: none !important; }
+}
+
+/* ── Golden thread — thin line from darkness to clock ──────────────────── */
+.golden-thread {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 120px;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+}
+#golden-thread-path {
+  stroke: rgba(216,189,128,0.52);
+  stroke-width: 0.9px;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 4px rgba(216,189,128,0.22));
+  vector-effect: non-scaling-stroke;
+}
+
 /* ── Continuation: TIME FLIES ──────────────────────────────────────────── */
 #continuation {
   position: relative;
@@ -547,6 +609,10 @@ a {
   opacity: 0 !important;
   filter: blur(14px) !important;
   transform: translateY(10px) translateX(var(--dx, 0px)) scale(0.92) rotate(var(--rot, 0deg)) !important;
+}
+.timeflies-word span.is-bending {
+  filter: blur(var(--bend-blur, 0px)) !important;
+  transform: translate3d(var(--bend-x, 0px), var(--bend-y, 0px), 0) scale(var(--bend-sx, 1), var(--bend-sy, 1)) skewX(var(--bend-skew, 0deg)) !important;
 }
 .timeflies-hint {
   margin: 22px 0 0;

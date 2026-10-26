@@ -171,12 +171,24 @@
           </p>
         </div>
       </section>
+      <!-- Subtle cursor glow (continuation only) -->
+      <div id="cursor-glow" aria-hidden="true">
+        <div class="cursor-glow-core"></div>
+        <div class="cursor-trail" data-trail="0"></div>
+        <div class="cursor-trail" data-trail="1"></div>
+        <div class="cursor-trail" data-trail="2"></div>
+      </div>
+
       <!-- Continuation: TIME FLIES — cinematic, minimal, dark -->
       <div id="continuation" aria-label="Continuation">
         <!-- 1. Darkness: fades the journey into near-black -->
         <section id="darkness" aria-hidden="true">
           <div class="darkness-veil"></div>
           <p class="darkness-caption" aria-hidden="true">and then —</p>
+          <!-- Golden thread: emerges from darkness, becomes clock outline -->
+          <svg class="golden-thread" viewBox="0 0 1200 120" preserveAspectRatio="none" aria-hidden="true">
+            <path id="golden-thread-path" d="M -80 60 C 260 58, 520 46, 600 60 S 940 62, 1280 60" fill="none" />
+          </svg>
         </section>
 
         <!-- 2. TIME FLIES: enormous elegant typography -->
