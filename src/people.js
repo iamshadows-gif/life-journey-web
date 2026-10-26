@@ -4,9 +4,9 @@
  * Ages are the age of “Me”, not the age of the other person.
  * A negative startAge means they are already here when our story begins.
  * endAge: null = this person remains alive through the story and stays on the now line.
- * At endAge (or leaveAge when a sky target is given) the dot rises to skyX/skyY
- * and remains there as a persistent star — no fading away.
- * leaveAge is a passing connection that also rises to a star when skyX/skyY is set.
+ * At endAge the dot rises to skyX/skyY and remains there as a persistent star.
+ * leaveAge is a temporary passing connection — it drifts off-frame left/right
+ * and disappears. Only family become stars.
  * divergeAge / divergeLaneX creates an independent path that stays on-screen.
  * laneX and sky positions are normalized coordinates (0…1).
  * enterFrom sweeps a new thread in from an edge. origin makes a birth branch
@@ -68,6 +68,7 @@ export const PEOPLE = [
     skyY: 0.2,
   },
 
+  // Temporary connections — drift off and disappear, no stars
   {
     id: "school-friend",
     name: "Kindergarten friend",
@@ -78,8 +79,6 @@ export const PEOPLE = [
     leaveTo: "left",
     laneX: 0.59,
     enterFrom: "right",
-    skyX: 0.18,
-    skyY: 0.14,
   },
   {
     id: "childhood-friend",
@@ -91,8 +90,6 @@ export const PEOPLE = [
     leaveTo: "right",
     laneX: 0.6,
     enterFrom: "left",
-    skyX: 0.71,
-    skyY: 0.18,
   },
   {
     id: "first-love",
@@ -104,8 +101,6 @@ export const PEOPLE = [
     leaveTo: "right",
     laneX: 0.57,
     enterFrom: "right",
-    skyX: 0.29,
-    skyY: 0.16,
   },
   {
     id: "university-friend",
@@ -117,9 +112,8 @@ export const PEOPLE = [
     leaveTo: "left",
     laneX: 0.28,
     enterFrom: "left",
-    skyX: 0.22,
-    skyY: 0.12,
   },
+  // Family — rises and remains as interconnected stars
   {
     id: "wife",
     name: "Wife",
@@ -148,6 +142,7 @@ export const PEOPLE = [
     divergeYears: 10,
     divergeLaneX: 0.92,
   },
+  // Temporary again
   {
     id: "coworker",
     name: "Coworker",
@@ -158,8 +153,6 @@ export const PEOPLE = [
     leaveTo: "left",
     laneX: 0.23,
     enterFrom: "left",
-    skyX: 0.15,
-    skyY: 0.19,
   },
   {
     id: "old-friend",
@@ -171,8 +164,6 @@ export const PEOPLE = [
     leaveTo: "left",
     laneX: 0.29,
     enterFrom: "left",
-    skyX: 0.88,
-    skyY: 0.14,
   },
 ];
 
