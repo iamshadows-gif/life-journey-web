@@ -171,148 +171,44 @@
           </p>
         </div>
       </section>
-      <section id="hub" aria-labelledby="hub-title">
-        <div class="hub-inner">
-          <header class="hub-intro">
-            <p class="hub-eyebrow">Beyond the journey &mdash; a quiet continuation</p>
-            <h2 id="hub-title">What shapes the time between?</h2>
-            <p class="hub-lead">
-              The light remains. What follows is not a scorecard, but a space to notice
-              how hours gather — what pulls us into loops, what we quietly set aside,
-              what waits beyond the screen, and how a single choice can re-thread a day.
-            </p>
-          </header>
+      <!-- Continuation: TIME FLIES — cinematic, minimal, dark -->
+      <div id="continuation" aria-label="Continuation">
+        <!-- 1. Darkness: fades the journey into near-black -->
+        <section id="darkness" aria-hidden="true">
+          <div class="darkness-veil"></div>
+        </section>
 
-          <svg class="hub-threads" viewBox="0 0 1000 320" preserveAspectRatio="none" aria-hidden="true">
-            <!-- Subtle connecting threads between the four nodes, drawn with muted gold -->
-            <path d="M 250 110 C 380 40, 620 40, 750 110" fill="none" stroke="rgba(216,189,128,0.18)" stroke-width="1.1" />
-            <path d="M 250 210 C 380 280, 620 280, 750 210" fill="none" stroke="rgba(216,189,128,0.14)" stroke-width="1" />
-            <path d="M 500 110 C 505 150, 495 170, 500 210" fill="none" stroke="rgba(179,190,208,0.12)" stroke-width="0.9" stroke-dasharray="4 6" />
-          </svg>
+        <!-- 2. TIME FLIES: enormous elegant typography -->
+        <section id="timeflies" aria-labelledby="timeflies-title">
+          <h2 id="timeflies-title" class="timeflies-title" aria-label="Time flies">
+            <span class="timeflies-word" data-word="TIME"><span>T</span><span>I</span><span>M</span><span>E</span></span>
+            <span class="timeflies-word" data-word="FLIES"><span>F</span><span>L</span><span>I</span><span>E</span><span>S</span></span>
+          </h2>
+          <p class="timeflies-hint" id="timeflies-hint">Move your pointer across the words — or tap on touchscreens</p>
+        </section>
 
-          <nav class="hub-grid" aria-label="Four threads to explore">
-            <button class="hub-node" data-dest="distractions" aria-expanded="false" aria-controls="panel-distractions">
-              <span class="hub-node__index">01 — The Distractions</span>
-              <h3>Loops we enter</h3>
-              <p>Phone in hand, endless scroll, comparison, the gentle art of postponing.</p>
-              <span class="hub-node__open" aria-hidden="true">Explore <span>→</span></span>
-              <svg class="hub-node__motif" viewBox="0 0 120 48" aria-hidden="true">
-                <path d="M 8 24 C 28 8, 44 40, 60 24 C 76 8, 92 40, 112 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" />
-                <path d="M 8 28 C 28 12, 44 44, 60 28 C 76 12, 92 44, 112 28" fill="none" stroke="currentColor" stroke-width="0.9" stroke-linecap="round" opacity="0.45" />
-                <path d="M 32 18 L 88 18" fill="none" stroke="currentColor" stroke-width="0.7" stroke-dasharray="3 5" opacity="0.5" />
-              </svg>
-            </button>
-
-            <button class="hub-node" data-dest="dreams" aria-expanded="false" aria-controls="panel-dreams">
-              <span class="hub-node__index">02 — The Dreams</span>
-              <h3>Threads left dim</h3>
-              <p>Ambitions set down, talents paused, goals waiting for a second light.</p>
-              <span class="hub-node__open" aria-hidden="true">Explore <span>→</span></span>
-              <svg class="hub-node__motif" viewBox="0 0 120 48" aria-hidden="true">
-                <path d="M 8 28 C 36 28, 40 12, 60 20 C 80 28, 88 12, 112 16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" />
-                <path d="M 60 20 C 64 30, 72 36, 88 38" fill="none" stroke="currentColor" stroke-width="0.8" opacity="0.4" stroke-linecap="round" />
-                <circle cx="112" cy="16" r="1.6" fill="currentColor" opacity="0.7" />
-                <circle cx="88" cy="38" r="1.2" fill="currentColor" opacity="0.35" />
-              </svg>
-            </button>
-
-            <button class="hub-node" data-dest="realworld" aria-expanded="false" aria-controls="panel-realworld">
-              <span class="hub-node__index">03 — The Real World</span>
-              <h3>Where threads gather</h3>
-              <p>Creativity, friendship, nature, adventure — the places light gathers.</p>
-              <span class="hub-node__open" aria-hidden="true">Explore <span>→</span></span>
-              <svg class="hub-node__motif" viewBox="0 0 120 48" aria-hidden="true">
-                <path d="M 8 42 C 30 18, 42 32, 60 24 C 78 16, 90 28, 112 10" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" />
-                <path d="M 8 38 C 32 24, 48 36, 60 24 C 72 12, 88 22, 112 14" fill="none" stroke="currentColor" stroke-width="0.8" opacity="0.45" />
-                <path d="M 60 24 C 62 32, 68 38, 76 40" fill="none" stroke="currentColor" stroke-width="0.7" opacity="0.35" />
-              </svg>
-            </button>
-
-            <button class="hub-node" data-dest="choice" aria-expanded="false" aria-controls="panel-choice">
-              <span class="hub-node__index">04 — The Choice</span>
-              <h3>A thread, then another</h3>
-              <p>Small habits, daily decisions, and how a life gently changes direction.</p>
-              <span class="hub-node__open" aria-hidden="true">Explore <span>→</span></span>
-              <svg class="hub-node__motif" viewBox="0 0 120 48" aria-hidden="true">
-                <path d="M 8 24 L 52 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" />
-                <path d="M 52 24 C 60 12, 72 12, 88 8" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" />
-                <path d="M 52 24 C 60 24, 72 24, 88 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" />
-                <path d="M 52 24 C 60 36, 72 36, 88 40" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" />
-                <circle cx="88" cy="8" r="1.4" fill="currentColor" opacity="0.8" />
-                <circle cx="88" cy="24" r="1.4" fill="currentColor" opacity="0.5" />
-                <circle cx="88" cy="40" r="1.4" fill="currentColor" opacity="0.5" />
-              </svg>
-            </button>
-          </nav>
-
-          <div class="hub-panels">
-            <article id="panel-distractions" class="hub-panel" hidden>
-              <div class="hub-panel__inner">
-                <button class="hub-panel__close" aria-label="Close">×</button>
-                <p class="hub-panel__kicker">01 — Repetitive patterns, interrupted lines</p>
-                <h3>The Distractions</h3>
-                <p class="hub-panel__lead">Not a warning, just a noticing. How often do we reach for the phone, drift into comparison, or let one more video become the evening? These threads loop, they don’t judge.</p>
-                <ul class="hub-panel__list">
-                  <li><strong>Scrolling without arrival</strong> — the feed that never ends. What if we paused one loop and noticed where we landed?</li>
-                  <li><strong>Comparison as a quiet theft</strong> — their highlight beside our ordinary. A prompt, not a verdict.</li>
-                  <li><strong>Procrastination as protection</strong> — delay often guards something tender. What small step would feel kind today?</li>
-                </ul>
-                <p class="hub-panel__reflect">Try this: one evening this week, leave one loop unfinished. Notice what returns in the space that follows. No score, no streak — just a thread to follow gently.</p>
-              </div>
-            </article>
-
-            <article id="panel-dreams" class="hub-panel" hidden>
-              <div class="hub-panel__inner">
-                <button class="hub-panel__close" aria-label="Close">×</button>
-                <p class="hub-panel__kicker">02 — Fading threads, delicate branches</p>
-                <h3>The Dreams</h3>
-                <p class="hub-panel__lead">Some ambitions were not abandoned; they were postponed. They wait like dimmed lines, ready to be re-lit with a small attention.</p>
-                <ul class="hub-panel__list">
-                  <li><strong>Neglected talents</strong> — the instrument, the sketchbook, the language half-learned. What still tugs, even quietly?</li>
-                  <li><strong>Postponed goals</strong> — “when there’s time” can be years. What if a dream needed only ten minutes, not a reinvention?</li>
-                  <li><strong>Rediscovery</strong> — revisit one old thread. Dust it. See if it still glows.</li>
-                </ul>
-                <p class="hub-panel__reflect">Reflection: name one dream you set down with care, not failure. Write one sentence you’d tell it today if you met again.</p>
-              </div>
-            </article>
-
-            <article id="panel-realworld" class="hub-panel" hidden>
-              <div class="hub-panel__inner">
-                <button class="hub-panel__close" aria-label="Close">×</button>
-                <p class="hub-panel__kicker">03 — Open compositions, converging threads, warm light</p>
-                <h3>The Real World</h3>
-                <p class="hub-panel__lead">Beyond screens, threads converge: hands making, friends laughing, trails, pages, kitchens, studios. The world is not an argument against technology — it’s an invitation alongside it.</p>
-                <ul class="hub-panel__list">
-                  <li><strong>Creativity & learning</strong> — make something small with your hands. The process matters more than the product.</li>
-                  <li><strong>Friendship & nature</strong> — a walk taken together, a meal without rush. Attention as a gift.</li>
-                  <li><strong>Adventure in miniature</strong> — not every horizon is distant. A new street, a new skill, a new recipe is also unknown territory.</li>
-                </ul>
-                <p class="hub-panel__reflect">Choose one: this weekend, plan one hour with no purpose other than being there. Notice how time feels when not measured.</p>
-              </div>
-            </article>
-
-            <article id="panel-choice" class="hub-panel" hidden>
-              <div class="hub-panel__inner">
-                <button class="hub-panel__close" aria-label="Close">×</button>
-                <p class="hub-panel__kicker">04 — Branching paths, contrasting light, multiple directions</p>
-                <h3>The Choice</h3>
-                <p class="hub-panel__lead">Everyday habits are not moral judgments — they are threads with weight. A small choice, repeated, gently changes direction.</p>
-                <ul class="hub-panel__list">
-                  <li><strong>Habits as threads</strong> — one evening of sleep, one walk, one page. No heroics, just continuity.</li>
-                  <li><strong>Direction over perfection</strong> — you need not optimize a life, only orient it. A degree of shift, over years, becomes a different sky.</li>
-                  <li><strong>The next thread</strong> — from where you are, what is one gentle choice for tomorrow?</li>
-                </ul>
-                <p class="hub-panel__reflect">Write a one-line intention: “Tomorrow, I will…” Keep it small enough to keep. The light is not in the choice itself, but in what it keeps alive.</p>
-              </div>
-            </article>
+        <!-- 3. Giant Clock: scroll-driven, minimal -->
+        <section id="clock-section" aria-labelledby="clock-title">
+          <h2 id="clock-title" class="sr-only">A clock moving with scroll</h2>
+          <div class="clock-wrap">
+            <svg
+              id="giant-clock"
+              viewBox="0 0 400 400"
+              role="img"
+              aria-label="A large minimalist clock whose hands advance as you scroll. Scroll backward reverses them."
+            >
+              <circle class="clock-face" cx="200" cy="200" r="188" />
+              <g class="clock-ticks" aria-hidden="true"></g>
+              <g id="clock-hands" style="transform-origin: 200px 200px">
+                <line id="hour-hand" x1="200" y1="200" x2="200" y2="118" />
+                <line id="minute-hand" x1="200" y1="200" x2="200" y2="74" />
+              </g>
+              <circle cx="200" cy="200" r="3.2" class="clock-center" />
+            </svg>
+            <p class="clock-caption">Scroll to move time. Reverse to go back.</p>
           </div>
-
-          <div class="hub-hint" id="hub-continue" aria-hidden="true">
-            <span>Continue to explore</span>
-            <span class="hub-hint__arrow">↓</span>
-          </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </main>
     <script type="module" src="/src/main.js"></script>
   </body>

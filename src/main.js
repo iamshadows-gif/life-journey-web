@@ -130,115 +130,279 @@ document.querySelector(".wordmark").addEventListener("click", (event) => {
 // Audio removed for now — user will provide different audio.
 // Sound toggle hidden in index.html; no audio logic needed.
 
-// ── Hub: continuation after 85 ─────────────────────────────────────────────
-const hub = document.querySelector("#hub");
-const hubNodes = [...document.querySelectorAll(".hub-node")];
-const hubPanels = [...document.querySelectorAll(".hub-panel")];
-const hubCloses = [...document.querySelectorAll(".hub-panel__close")];
+// ── Continuation: Darkness → TIME FLIES → Clock ──────────────────────────
+const continuation = document.querySelector("#continuation");
+const darkness = document.querySelector("#darkness");
+const timefliesSection = document.querySelector("#timeflies");
+const timefliesTitle = document.querySelector("#timeflies-title");
+const timefliesLetters = timefliesTitle
+  ? [...timefliesTitle.querySelectorAll(".timeflies-word span")]
+  : [];
+const clockSection = document.querySelector("#clock-section");
+const giantClock = document.querySelector("#giant-clock");
+const clockTicks = document.querySelector(".clock-ticks");
+const hourHand = document.querySelector("#hour-hand");
+const minuteHand = document.querySelector("#minute-hand");
 
-function openHubPanel(id) {
-  const target = document.getElementById(`panel-${id}`);
-  if (!target) return;
-  // Close others
-  hubPanels.forEach((p) => {
-    if (p !== target) p.hidden = true;
-  });
-  hubNodes.forEach((n) => {
-    n.setAttribute("aria-expanded", n.dataset.dest === id ? "true" : "false");
-  });
-  target.hidden = false;
-  target.focus({ preventScroll: true });
-  // Update URL without reload (preserve history)
-  const url = new URL(window.location.href);
-  url.hash = id;
-  history.replaceState(null, "", url);
-  // Smooth scroll to panel using existing Lenis
-  const top = target.getBoundingClientRect().top + window.scrollY - 20;
-  if (!reducedPreference.matches) {
-    lenis.scrollTo(top, { duration: 1.2 });
-  } else {
-    window.scrollTo(0, top);
-  }
-}
-
-function closeHubPanels() {
-  hubPanels.forEach((p) => (p.hidden = true));
-  hubNodes.forEach((n) => n.setAttribute("aria-expanded", "false"));
-  if (window.location.hash) {
-    history.replaceState(null, "", window.location.pathname);
-  }
-}
-
-hubNodes.forEach((btn) =>
-  btn.addEventListener("click", () => {
-    const id = btn.dataset.dest;
-    const panel = document.getElementById(`panel-${id}`);
-    const willOpen = panel.hidden;
-    if (willOpen) openHubPanel(id);
-    else closeHubPanels();
-  }),
-);
-hubCloses.forEach((btn) =>
-  btn.addEventListener("click", () => {
-    closeHubPanels();
-    // Return focus to the node that opened it
-    const id = btn.closest(".hub-panel").id.replace("panel-", "");
-    document.querySelector(`[data-dest="${id}"]`)?.focus();
-  }),
-);
-
-// Esc closes any open panel and returns to hub grid
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") {
-    const open = hubPanels.find((p) => !p.hidden);
-    if (open) {
-      e.preventDefault();
-      closeHubPanels();
-      const id = open.id.replace("panel-", "");
-      document.querySelector(`[data-dest="${id}"]`)?.focus();
+// Build clock ticks (minimal, restrained)
+if (clockTicks) {
+  const NS = "http://www.w3.org/2000/svg";
+  for (let i = 0; i < 60; i++) {
+    const isMajor = i % 5 === 0;
+    const angle = (i * 6 * Math.PI) / 180;
+    const rOuter = 186;
+    const rInner = isMajor ? 172 : 178;
+    const x1 = 200 + Math.sin(angle) * rInner;
+    const y1 = 200 - Math.cos(angle) * rInner;
+    const x2 = 200 + Math.sin(angle) * rOuter;
+    const y2 = 200 - Math.cos(angle) * rOuter;
+    const line = document.createElementNS(NS, "line");
+    line.setAttribute("x1", x1);
+    line.setAttribute("y1", y1);
+    line.setAttribute("x2", x2);
+    line.setAttribute("y2", y2);
+    line.setAttribute("class", isMajor ? "" : "minor");
+    if (isMajor) {
+      line.setAttribute("stroke", "rgba(216,189,128,0.38)");
+      line.setAttribute("stroke-width", "1.4");
     }
-  }
-});
-
-// Deep link: #distractions etc.
-if (window.location.hash) {
-  const hash = window.location.hash.slice(1);
-  if (["distractions", "dreams", "realworld", "choice"].includes(hash)) {
-    // Defer until after fonts/scroll ready
-    requestAnimationFrame(() => openHubPanel(hash));
+    clockTicks.appendChild(line);
   }
 }
 
-// Reveal hub when it enters viewport — continuous, no pin overlap
-if (hub) {
+// Transition into darkness: fade stage chrome already via ending; add subtle veil
+// Use ScrollTrigger to darken stage background as we enter #darkness
+if (darkness && stage) {
   ScrollTrigger.create({
-    trigger: hub,
-    start: "top 85%",
-    onEnter: () => hub.classList.add("is-visible"),
-    onEnterBack: () => hub.classList.add("is-visible"),
-    onLeaveBack: () => {
-      // keep visible once revealed; comment out to hide on scroll up past hub
+    trigger: darkness,
+    start: "top bottom", // when darkness top hits viewport bottom
+    end: "top 55%",
+    scrub: true,
+    onUpdate(self) {
+      // As darkness approaches, gently dim the pinned stage
+      // This creates a cinematic bleed into black without a cut
+      const p = self.progress; // 0 → 1 as darkness slides up
+      if (progress >= 0.998) {
+        // Only after journey is essentially complete
+        stage.style.opacity = String(1 - p * 0.45);
+      }
     },
   });
-  // Also add subtle parallax for hub-threads SVG (restrained)
-  const hubThreads = document.querySelector(".hub-threads");
-  if (hubThreads && !reducedPreference.matches) {
-    gsap.fromTo(
-      hubThreads,
-      { y: 8, opacity: 0.7 },
-      {
-        y: -8,
-        opacity: 1,
-        ease: "none",
-        scrollTrigger: {
-          trigger: hub,
-          start: "top bottom",
-          end: "bottom top",
-          scrub: true,
-        },
-      },
-    );
+  ScrollTrigger.create({
+    trigger: "#continuation",
+    start: "top 90%",
+    end: "top 10%",
+    scrub: true,
+    onUpdate(self) {
+      // Ensure stage fully hidden once past continuation
+      if (self.progress > 0.6) {
+        stage.style.opacity = "0";
+      } else if (progress < 0.998) {
+        stage.style.opacity = "";
+      }
+    },
+  });
+}
+
+// TIME FLIES hover dissolve — refined, distance-based
+if (timefliesTitle && timefliesLetters.length) {
+  const isTouch = window.matchMedia("(pointer: coarse)").matches;
+  const prefersReduced = reducedPreference.matches;
+
+  // Make timeflies focusable for keyboard
+  timefliesSection?.setAttribute("tabindex", "0");
+
+  let rafId = null;
+  let mouseX = -9999;
+  let mouseY = -9999;
+
+  function updateDissolve() {
+    rafId = null;
+    for (const span of timefliesLetters) {
+      const rect = span.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dx = mouseX - cx;
+      const dy = mouseY - cy;
+      const dist = Math.hypot(dx, dy);
+      // Radius of influence: ~160px, dissolve gradually within
+      const maxDist = 170;
+      const influence = 1 - Math.min(dist / maxDist, 1);
+      // Map influence to opacity/blur
+      if (influence > 0.02) {
+        const op = Math.max(0, 1 - influence * 1.05);
+        const blur = influence * 8;
+        const ty = influence * 6;
+        span.style.opacity = String(op);
+        if (!prefersReduced) {
+          span.style.filter = `blur(${blur}px)`;
+          span.style.transform = `translateY(${ty}px) scale(${1 - influence * 0.02})`;
+        } else {
+          span.style.filter = "";
+          span.style.transform = "";
+        }
+        span.classList.toggle("is-dissolving", influence > 0.5);
+      } else {
+        span.style.opacity = "";
+        span.style.filter = "";
+        span.style.transform = "";
+        span.classList.remove("is-dissolving");
+      }
+    }
   }
+
+  function onPointerMove(e) {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    if (!rafId) rafId = requestAnimationFrame(updateDissolve);
+  }
+
+  function onPointerLeave() {
+    mouseX = -9999;
+    mouseY = -9999;
+    // Gently return
+    for (const span of timefliesLetters) {
+      span.style.transition = "opacity 0.9s ease, filter 0.9s ease, transform 0.9s ease";
+      span.style.opacity = "";
+      span.style.filter = "";
+      span.style.transform = "";
+      span.classList.remove("is-dissolving");
+    }
+    setTimeout(() => {
+      for (const span of timefliesLetters) span.style.transition = "";
+    }, 900);
+  }
+
+  if (!isTouch) {
+    timefliesSection?.addEventListener("pointermove", onPointerMove);
+    timefliesSection?.addEventListener("pointerleave", onPointerLeave);
+    timefliesSection?.addEventListener("pointerenter", onPointerMove);
+  }
+
+  // Keyboard: focus gives subtle dissolve pulse
+  timefliesSection?.addEventListener("focus", () => {
+    if (prefersReduced) return;
+    timefliesLetters.forEach((span, i) => {
+      setTimeout(() => {
+        span.style.opacity = "0.35";
+        span.style.filter = "blur(3px)";
+      }, i * 40);
+    });
+  });
+  timefliesSection?.addEventListener("blur", () => {
+    timefliesLetters.forEach((span) => {
+      span.style.opacity = "";
+      span.style.filter = "";
+      span.style.transform = "";
+    });
+  });
+  timefliesSection?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      // Toggle dissolve via tap-like
+      const anyDissolved = timefliesLetters.some((s) => s.classList.contains("is-dissolving"));
+      if (!anyDissolved) {
+        timefliesSection.classList.add("is-touched");
+        setTimeout(() => timefliesSection.classList.remove("is-touched"), 1400);
+        timefliesLetters.forEach((span, i) => {
+          span.style.opacity = "0";
+          span.style.filter = "blur(6px)";
+          span.style.transition = "opacity 0.6s ease, filter 0.6s ease";
+          setTimeout(() => {
+            span.style.opacity = "";
+            span.style.filter = "";
+            span.style.transition = "";
+          }, 1200 + i * 30);
+        });
+      }
+    }
+  });
+
+  // Touch alternative: tap to dissolve, gentle return
+  if (isTouch) {
+    let touchTimeout = null;
+    const handleTouch = (e) => {
+      e.preventDefault();
+      // Prevent pointermove handling
+      timefliesSection.classList.add("is-touched");
+      timefliesLetters.forEach((span, i) => {
+        span.style.transition = "opacity 0.55s ease, filter 0.55s ease, transform 0.55s ease";
+        span.style.opacity = "0";
+        span.style.filter = "blur(6px)";
+        span.style.transform = `translateY(${2 + Math.random() * 4}px)`;
+      });
+      clearTimeout(touchTimeout);
+      touchTimeout = setTimeout(() => {
+        timefliesSection.classList.remove("is-touched");
+        timefliesLetters.forEach((span) => {
+          span.style.opacity = "";
+          span.style.filter = "";
+          span.style.transform = "";
+          span.style.transition = "opacity 0.9s ease, filter 0.9s ease, transform 0.9s ease";
+        });
+        setTimeout(() => {
+          timefliesLetters.forEach((s) => (s.style.transition = ""));
+        }, 900);
+      }, 1400);
+    };
+    timefliesSection?.addEventListener("touchstart", handleTouch, { passive: false });
+    // Also allow click fallback
+    timefliesSection?.addEventListener("click", (e) => {
+      if (!isTouch) return;
+      handleTouch(e);
+    });
+  }
+}
+
+// Giant Clock — scroll-driven, reversible, enough distance
+if (clockSection && giantClock && hourHand && minuteHand) {
+  // Ensure hands rotate around center
+  const clockHands = document.querySelector("#clock-hands");
+  if (clockHands) {
+    clockHands.style.transformOrigin = "200px 200px";
+    clockHands.style.transformBox = "fill-box";
+  }
+  hourHand.style.transformOrigin = "200px 200px";
+  minuteHand.style.transformOrigin = "200px 200px";
+
+  // Create ScrollTrigger for clock with generous scroll distance
+  // Clock-section is 220vh, sticky wrap makes clock stay while scroll drives hands
+  ScrollTrigger.create({
+    trigger: clockSection,
+    start: "top top",
+    end: "bottom bottom",
+    scrub: reducedPreference.matches ? 0.3 : 0.8,
+    onUpdate(self) {
+      const p = self.progress; // 0 → 1 over clock-section scroll
+      // Map to meaningful time: 2 full rotations of minute hand = 2 hours? Actually 12h = 720min = 12 rotations
+      // For cinematic feel: 4 hours over full scroll => minute 4 rotations (1440deg), hour 120deg
+      // Keep it deliberate, not frantic
+      const minuteDeg = p * 1440; // 4 full rotations
+      const hourDeg = p * 120; // 4 hours = 120deg (360/12*4)
+      // Apply with GSAP for smoothness
+      gsap.set(minuteHand, { rotation: minuteDeg, transformOrigin: "200px 200px" });
+      gsap.set(hourHand, { rotation: hourDeg, transformOrigin: "200px 200px" });
+      // Also nudge clock face opacity subtly on entry
+      if (giantClock) {
+        giantClock.style.opacity = String(0.72 + p * 0.28);
+      }
+    },
+  });
+
+  // Reveal clock gently when entering
+  ScrollTrigger.create({
+    trigger: clockSection,
+    start: "top 80%",
+    onEnter: () => {
+      if (!reducedPreference.matches) {
+        gsap.fromTo(
+          giantClock,
+          { scale: 0.96, opacity: 0.6 },
+          { scale: 1, opacity: 1, duration: 0.9, ease: "power2.out" },
+        );
+      }
+    },
+  });
 }
 
 // Rebuild caches only when the actual stage size changes. 100svh prevents
