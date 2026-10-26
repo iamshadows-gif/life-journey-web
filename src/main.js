@@ -717,9 +717,11 @@ if (clockSection && giantClock && hourHand && minuteHand && clockFace && clockCe
 // ── 7. Epilogue — memory → thank you → credit (fully scroll-driven) ──
 {
   const epilogue = document.querySelector("#epilogue");
+  const memoryChapter = document.querySelector(".memory-chapter");
   const memoryWrap = document.querySelector("#memory-wrap");
   const memoryWords = epilogue ? [...epilogue.querySelectorAll(".memory-word")] : [];
   const epilogueGlow = document.querySelector(".epilogue-glow");
+  const thanksChapter = document.querySelector(".thanks-chapter");
   const thanksWrap = document.querySelector("#thanks-wrap");
   const thanksThread = document.querySelector(".thanks-thread");
   const thanksThreadPath = document.querySelector("#thanks-thread-path");
@@ -727,77 +729,100 @@ if (clockSection && giantClock && hourHand && minuteHand && clockFace && clockCe
   const thanksText = document.querySelector("#thanks-text");
   const thanksMain = document.querySelector(".thanks-main");
   const thanksSub = document.querySelector(".thanks-sub");
+  const creditChapter = document.querySelector(".credit-chapter");
   const creditWrap = document.querySelector("#credit-wrap");
   const creditMade = document.querySelector(".credit-made");
   const creditSocial = document.querySelector(".credit-social");
 
-  if (epilogue && memoryWords.length && !reducedPreference.matches) {
-    // Initial states
-    gsap.set(memoryWords, { opacity: 0, filter: "blur(10px)", y: 10 });
-    gsap.set(epilogueGlow, { opacity: 0 });
-    gsap.set(thanksThread, { opacity: 0 });
-    if (thanksThreadPath) {
-      const tLen = 1180;
-      gsap.set(thanksThreadPath, { strokeDasharray: tLen, strokeDashoffset: tLen });
+  if (epilogue && memoryWords.length) {
+    const prefersReduced = reducedPreference.matches;
+
+    if (!prefersReduced) {
+      // Initial states
+      gsap.set(memoryWords, { opacity: 0, filter: "blur(10px)", y: 12 });
+      gsap.set(epilogueGlow, { opacity: 0 });
+      gsap.set(thanksThread, { opacity: 0 });
+      if (thanksThreadPath) {
+        const tLen = 1240;
+        gsap.set(thanksThreadPath, { strokeDasharray: tLen, strokeDashoffset: tLen });
+      }
+      gsap.set(thanksGlow, { opacity: 0, scale: 0.72 });
+      gsap.set(thanksText, { opacity: 0 });
+      gsap.set([thanksMain, thanksSub], { opacity: 0, y: 10, filter: "blur(8px)" });
+      gsap.set(creditMade, { opacity: 0, y: 8 });
+      gsap.set(creditSocial, { opacity: 0 });
+
+      // Memory: staged reveal on its chapter
+      const memTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: memoryChapter || memoryWrap,
+          start: "top 78%",
+          end: "top -10%",
+          scrub: 1,
+        },
+      });
+      memTl.to(epilogueGlow, { opacity: 0.9, duration: 0.3, ease: "none" }, 0);
+      memTl.to(memoryWords, {
+        opacity: 1,
+        filter: "blur(0px)",
+        y: 0,
+        duration: 0.8,
+        ease: "power2.out",
+        stagger: 0.08,
+      }, 0.12);
+      // Hold then recede
+      memTl.to(memoryWrap, { opacity: 0, scale: 0.96, filter: "blur(6px)", duration: 0.35, ease: "power2.in" }, 0.82);
+      memTl.to(epilogueGlow, { opacity: 0, duration: 0.35 }, 0.82);
+
+      // Thanks: thread arc + glow + text
+      const thanksTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: thanksChapter || thanksWrap,
+          start: "top 80%",
+          end: "top -15%",
+          scrub: 1,
+        },
+      });
+      thanksTl.to(thanksThread, { opacity: 1, duration: 0.25, ease: "none" }, 0);
+      if (thanksThreadPath) {
+        thanksTl.to(thanksThreadPath, { strokeDashoffset: 0, duration: 0.6, ease: "power2.inOut" }, 0.08);
+      }
+      thanksTl.to(thanksGlow, { opacity: 0.95, scale: 1, duration: 0.4, ease: "power2.out" }, 0.28);
+      thanksTl.to(thanksText, { opacity: 1, duration: 0.2 }, 0.35);
+      thanksTl.to(thanksMain, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.35, ease: "power2.out" }, 0.38);
+      thanksTl.to(thanksSub, { opacity: 0.92, y: 0, filter: "blur(0px)", duration: 0.35, ease: "power2.out" }, 0.52);
+      // Fade thanks as we leave its chapter
+      thanksTl.to([thanksThread, thanksGlow, thanksText], { opacity: 0, duration: 0.3, ease: "power2.in" }, 0.85);
+
+      // Credit: final
+      const creditTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: creditChapter || creditWrap,
+          start: "top 78%",
+          end: "top 20%",
+          scrub: 1,
+        },
+      });
+      creditTl.to(creditMade, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 0);
+      creditTl.set(creditWrap, { className: "credit-wrap is-visible" }, 0.2);
+      creditTl.to(creditSocial, { opacity: 1, duration: 0.5, ease: "none" }, 0.25);
+    } else {
+      // Reduced motion: simple fades, no blur, still scroll-driven
+      gsap.set(memoryWords, { opacity: 0 });
+      gsap.set([epilogueGlow, thanksThread, thanksGlow, thanksText, creditMade, creditSocial], { opacity: 0 });
+      const memTl = gsap.timeline({
+        scrollTrigger: { trigger: memoryChapter || memoryWrap, start: "top 85%", end: "top 10%", scrub: 0.9 },
+      });
+      memTl.to(memoryWords, { opacity: 1, duration: 0.6, stagger: 0.05 }, 0);
+      const thanksTl = gsap.timeline({
+        scrollTrigger: { trigger: thanksChapter || thanksWrap, start: "top 85%", end: "top 15%", scrub: 0.9 },
+      });
+      thanksTl.to([thanksMain, thanksSub, thanksThread], { opacity: 1, duration: 0.4 }, 0);
+      const creditTl = gsap.timeline({
+        scrollTrigger: { trigger: creditChapter || creditWrap, start: "top 85%", end: "top 30%", scrub: 0.9 },
+      });
+      creditTl.to([creditMade, creditSocial], { opacity: 1, duration: 0.4 }, 0);
     }
-    gsap.set(thanksGlow, { opacity: 0, scale: 0.72 });
-    gsap.set(thanksText, { opacity: 0 });
-    gsap.set([thanksMain, thanksSub], { opacity: 0, y: 8, filter: "blur(6px)" });
-    gsap.set(creditMade, { opacity: 0, y: 6 });
-    gsap.set(creditSocial, { opacity: 0 });
-
-    const epiTl = gsap.timeline({
-      scrollTrigger: {
-        trigger: epilogue,
-        start: "top top",
-        end: "bottom bottom",
-        scrub: 1,
-      },
-    });
-
-    // Warm glow emerges from darkness as clock has faded (0 → 0.08)
-    epiTl.to(epilogueGlow, { opacity: 0.92, duration: 0.12, ease: "none" }, 0);
-    // Memory staged reveal — slow blur-to-sharp, word by word
-    epiTl.to(memoryWords, {
-      opacity: 1,
-      filter: "blur(0px)",
-      y: 0,
-      duration: 0.42,
-      ease: "power2.out",
-      stagger: 0.06,
-    }, 0.04);
-    // Hold readable still for a moment (no tweens, just dwell 0.42→0.58)
-    // Memory recedes into darkness (0.58 → 0.72)
-    epiTl.to(memoryWrap, { opacity: 0, scale: 0.94, filter: "blur(6px)", duration: 0.18, ease: "power2.in" }, 0.58);
-    epiTl.to(epilogueGlow, { opacity: 0, duration: 0.18, ease: "none" }, 0.60);
-
-    // Thin golden thread draws itself across screen (0.62 → 0.78)
-    epiTl.to(thanksThread, { opacity: 1, duration: 0.10, ease: "none" }, 0.62);
-    if (thanksThreadPath) {
-      epiTl.to(thanksThreadPath, { strokeDashoffset: 0, duration: 0.24, ease: "power2.inOut" }, 0.64);
-    }
-    // Arc glow gathers near center (0.74 → 0.86)
-    epiTl.to(thanksGlow, { opacity: 0.95, scale: 1, duration: 0.16, ease: "power2.out" }, 0.74);
-    // Thank you appears (0.78 → 0.90)
-    epiTl.to(thanksText, { opacity: 1, duration: 0.10 }, 0.78);
-    epiTl.to(thanksMain, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.16, ease: "power2.out" }, 0.80);
-    epiTl.to(thanksSub, { opacity: 0.92, y: 0, filter: "blur(0px)", duration: 0.16, ease: "power2.out" }, 0.86);
-
-    // Transition to final credit (0.90 → 1.0)
-    epiTl.to([thanksThread, thanksGlow, thanksText], { opacity: 0, duration: 0.14, ease: "power2.in" }, 0.90);
-    epiTl.to(creditMade, { opacity: 1, y: 0, duration: 0.16, ease: "power2.out" }, 0.92);
-    epiTl.set(creditWrap, { className: "credit-wrap is-visible" }, 0.94);
-    epiTl.to(creditSocial, { opacity: 1, duration: 0.16, ease: "none" }, 0.95);
-  } else if (epilogue && memoryWords.length && reducedPreference.matches) {
-    // Reduced motion: simple fades, no blur
-    gsap.set([epilogueGlow, thanksThread, thanksGlow], { opacity: 0 });
-    const epiTl = gsap.timeline({
-      scrollTrigger: { trigger: epilogue, start: "top top", end: "bottom bottom", scrub: 0.8 },
-    });
-    epiTl.to(memoryWords, { opacity: 1, duration: 0.3, stagger: 0.05 }, 0);
-    epiTl.to(memoryWrap, { opacity: 0, duration: 0.2 }, 0.55);
-    epiTl.to(creditMade, { opacity: 1, duration: 0.2 }, 0.85);
-    epiTl.to(creditSocial, { opacity: 1, duration: 0.2 }, 0.90);
   }
 }
 

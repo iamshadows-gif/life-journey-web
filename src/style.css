@@ -749,10 +749,15 @@ a {
 #epilogue {
   position: relative;
   background: #02040a;
-  /* Enough scroll distance for staged reveal without feeling endless */
-  min-height: 520vh;
   overflow: clip;
 }
+.epilogue-chapter {
+  position: relative;
+  overflow: clip;
+}
+.memory-chapter { min-height: 170vh; }
+.thanks-chapter { min-height: 190vh; }
+.credit-chapter { min-height: 120vh; }
 .epilogue-glow {
   position: absolute;
   top: 0;
@@ -933,7 +938,8 @@ a {
   .timeflies-word + .timeflies-word { font-size: clamp(46px, 18vw, 112px); }
   #giant-clock { width: clamp(260px, 86vw, 420px); height: clamp(260px, 86vw, 420px); }
   #darkness { height: 52vh; min-height: 300px; }
-  #epilogue { min-height: 460vh; }
+  .memory-chapter { min-height: 150vh; }
+  .thanks-chapter { min-height: 170vh; }
   .memory-title { font-size: clamp(24px, 6.2vw, 36px); max-width: 16ch; }
   .credit-social { right: auto; left: 50%; transform: translateX(-50%); bottom: max(22px, calc(env(safe-area-inset-bottom) + 16px)); gap: 20px; }
 }
