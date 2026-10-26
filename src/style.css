@@ -755,7 +755,7 @@ a {
   position: relative;
   overflow: clip;
 }
-.memory-chapter { min-height: 170vh; }
+.memory-chapter { min-height: 210vh; }
 .thanks-chapter { min-height: 190vh; }
 .credit-chapter { min-height: 120vh; }
 .epilogue-glow {
