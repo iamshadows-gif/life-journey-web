@@ -752,27 +752,29 @@ if (clockSection && giantClock && hourHand && minuteHand && clockFace && clockCe
       gsap.set(creditMade, { opacity: 0, y: 8 });
       gsap.set(creditSocial, { opacity: 0 });
 
-      // Memory: staged reveal on its chapter
+      // Memory: staged reveal — slow, then hold readable, then gentle recede
+      // Give enough scroll distance for the last words “a memory.” to fully sharpen
       const memTl = gsap.timeline({
         scrollTrigger: {
           trigger: memoryChapter || memoryWrap,
-          start: "top 78%",
-          end: "top -10%",
-          scrub: 1,
+          start: "top 72%",
+          end: "bottom 40%",
+          scrub: 1.2,
         },
       });
-      memTl.to(epilogueGlow, { opacity: 0.9, duration: 0.3, ease: "none" }, 0);
+      memTl.to(epilogueGlow, { opacity: 0.9, duration: 0.18, ease: "none" }, 0);
       memTl.to(memoryWords, {
         opacity: 1,
         filter: "blur(0px)",
         y: 0,
-        duration: 0.8,
+        duration: 0.38,
         ease: "power2.out",
-        stagger: 0.08,
-      }, 0.12);
-      // Hold then recede
-      memTl.to(memoryWrap, { opacity: 0, scale: 0.96, filter: "blur(6px)", duration: 0.35, ease: "power2.in" }, 0.82);
-      memTl.to(epilogueGlow, { opacity: 0, duration: 0.35 }, 0.82);
+        stagger: 0.032,
+      }, 0.10);
+      // Hold readable — last word finishes ~0.68, dwell until 0.84
+      // Gentle recede (was too fast before, and overlapped blur)
+      memTl.to(memoryWrap, { opacity: 0, scale: 0.97, filter: "blur(4px)", duration: 0.16, ease: "power2.inOut" }, 0.84);
+      memTl.to(epilogueGlow, { opacity: 0, duration: 0.16, ease: "none" }, 0.84);
 
       // Thanks: thread arc + glow + text
       const thanksTl = gsap.timeline({
